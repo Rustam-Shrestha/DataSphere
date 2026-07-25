@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat — Compliance Manager</title>
+<link rel="stylesheet" href="/css/style.css">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+<nav>
+  <a href="/" class="brand">Compliance Manager</a>
+  <a href="/">Upload</a>
+  <a href="/data.html">Data</a>
+  <a href="/chatbot.html">Chat</a>
+  <a href="/dashboard.html">Dashboard</a>
+</nav>
+<div class="container">
+  <h1>Compliance Chat</h1>
+  <p class="subtitle">Ask questions about your compliance data in natural language.</p>
+
+  <div class="mode-toggle">
+    <button id="mode-nlu" class="mode-btn active">NLU Engine</button>
+    <button id="mode-gemini" class="mode-btn">Gemini AI</button>
+  </div>
+
+  <div class="chat-layout">
+    <div class="chat-main">
+      <div id="chat-messages" class="chat-messages">
+        <div class="message bot">
+          <div class="msg-text">Hello! I can answer questions about your compliance data. Try asking about failure rates, status counts, or specific records.</div>
+        </div>
+      </div>
+      <form id="chat-form" class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="e.g. What's the failure rate for Corrosion tests?" required>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    <div class="chat-sidebar">
+      <div class="card">
+        <h3>Example Questions</h3>
+        <ul class="example-list" id="example-list">
+          <li><a href="#" data-q="What is the failure rate for Corrosion tests?">Failure rate for Corrosion</a></li>
+          <li><a href="#" data-q="How many PASS for Spill Buckets tests?">PASS count for Spill Buckets</a></li>
+          <li><a href="#" data-q="Show me records for store #3">Records for store #3</a></li>
+          <li><a href="#" data-q="What certificates are expiring soon?">Expiring certificates</a></li>
+          <li><a href="#" data-q="Show me a chart of all test results">Chart of test results</a></li>
+        </ul>
+      </div>
+      <div id="chat-chart-container" class="chart-container" style="display:none">
+        <h3>Visualization</h3>
+        <div id="chat-chart"></div>
+      </div>
+      <div id="chat-sql-container" style="display:none">
+        <details>
+          <summary>SQL Query</summary>
+          <pre id="chat-sql" class="sql-block"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js" type="module"></script>
+<script src="/js/chatbot.js" type="module"></script>
+</body>
+</html>

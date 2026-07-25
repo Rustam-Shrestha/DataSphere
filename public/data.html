@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data — Compliance Manager</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav>
+  <a href="/" class="brand">Compliance Manager</a>
+  <a href="/">Upload</a>
+  <a href="/data.html">Data</a>
+  <a href="/chatbot.html">Chat</a>
+  <a href="/dashboard.html">Dashboard</a>
+</nav>
+<div class="container">
+  <h1>Compliance Records</h1>
+  <p class="subtitle">Browse, search, and manage all imported compliance test data.</p>
+
+  <div class="toolbar">
+    <input type="text" id="search-input" placeholder="Search by city, store #, or street..." class="search-box">
+    <button id="search-btn">Search</button>
+    <button id="refresh-btn" class="secondary">Refresh</button>
+    <span id="record-count" class="text-sm"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Store#</th>
+          <th>City</th>
+          <th>Street</th>
+          <th>Facility ID</th>
+          <th>Corrosion</th>
+          <th>Spill Buckets</th>
+          <th>Overfill</th>
+          <th>LLD</th>
+          <th>ATG</th>
+          <th>Sump</th>
+          <th>Stage 1</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="records-body"></tbody>
+    </table>
+  </div>
+
+  <div class="pagination" id="pagination">
+    <button id="prev-btn" class="secondary">Previous</button>
+    <span id="page-info">Page 1</span>
+    <button id="next-btn" class="secondary">Next</button>
+  </div>
+</div>
+
+<div id="edit-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <span class="modal-close">&times;</span>
+    <h2>Edit Record</h2>
+    <form id="edit-form">
+      <div class="form-grid" id="edit-form-fields"></div>
+      <button type="submit">Save Changes</button>
+      <button type="button" id="delete-btn" class="danger">Delete Record</button>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js" type="module"></script>
+<script src="/js/crud.js" type="module"></script>
+</body>
+</html>

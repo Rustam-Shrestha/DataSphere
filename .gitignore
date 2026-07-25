@@ -1,0 +1,42 @@
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+.env.local
+*.env
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Python NLU service
+nlu-service/.venv/
+nlu-service/__pycache__/
+nlu-service/.env
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Prisma
+prisma/migrations/

@@ -1,0 +1,65 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+}
+
+model UploadedFile {
+  id           String   @id @default(uuid())
+  filename     String
+  storedPath   String
+  fileType     String
+  checksum     String   @unique
+  rowsImported Int      @default(0)
+  importedAt   DateTime @default(now())
+  records      ComplianceRecord[]
+}
+
+model ComplianceRecord {
+  id                                    String   @id @default(uuid())
+  storeNumber                           Int
+  city                                  String
+  streetName                            String
+  facilityId                            Int?
+  channelOfTrade                        String?
+  deliveryCertificateExpiredDate        DateTime?
+  insuranceExpiredDate                  DateTime?
+  corrosionTestDate                     DateTime?
+  corrosionTestStatus                   String?
+  spillBucketsTestDate                  DateTime?
+  spillBucketTestStatus                 String?
+  overfillProtectionDeviceTestDate      DateTime?
+  overfillProtectionDeviceTestStatus    String?
+  lldLineTightnessTestDate              DateTime?
+  lldLineTightnessTestStatus            String?
+  atgProbesTestDate                     DateTime?
+  atgProbesTestStatus                   String?
+  sumpTestDate                          DateTime?
+  sumpTestStatus                        String?
+  stage1TestDate                        DateTime?
+  stage1TestStatus                      String?
+  uploadedFileId                        String?
+  uploadedFile                          UploadedFile? @relation(fields: [uploadedFileId], references: [id])
+  createdAt                             DateTime      @default(now())
+  updatedAt                             DateTime      @updatedAt
+
+  @@index([storeNumber])
+  @@index([city])
+  @@index([corrosionTestStatus])
+  @@index([spillBucketTestStatus])
+}

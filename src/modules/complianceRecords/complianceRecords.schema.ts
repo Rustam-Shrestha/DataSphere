@@ -1,0 +1,25 @@
+import { z } from "zod";
+
+export const updateComplianceRecordSchema = z.object({
+  storeNumber: z.number().int().optional(),
+  city: z.string().min(1).optional(),
+  streetName: z.string().min(1).optional(),
+  facilityId: z.number().int().nullable().optional(),
+  channelOfTrade: z.string().nullable().optional(),
+  deliveryCertificateExpiredDate: z.string().nullable().optional(),
+  insuranceExpiredDate: z.string().nullable().optional(),
+  corrosionTestDate: z.string().nullable().optional(),
+  corrosionTestStatus: z.string().nullable().optional(),
+  spillBucketsTestDate: z.string().nullable().optional(),
+  spillBucketTestStatus: z.string().nullable().optional(),
+  overfillProtectionDeviceTestDate: z.string().nullable().optional(),
+  overfillProtectionDeviceTestStatus: z.string().nullable().optional(),
+  lldLineTightnessTestDate: z.string().nullable().optional(),
+  lldLineTightnessTestStatus: z.string().nullable().optional(),
+  atgProbesTestDate: z.string().nullable().optional(),
+  atgProbesTestStatus: z.string().nullable().optional(),
+  sumpTestDate: z.string().nullable().optional(),
+  sumpTestStatus: z.string().nullable().optional(),
+  stage1TestDate: z.string().nullable().optional(),
+  stage1TestStatus: z.string().nullable().optional(),
+});
