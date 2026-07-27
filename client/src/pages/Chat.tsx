@@ -1,64 +1,35 @@
 import { useState, useRef, useEffect } from "react";
 import { api } from "../lib/api";
 import { Card, Button, Input } from "../components/ui";
-import * as d3 from "d3";
+import ChartRenderer from "../components/ChartRenderer";
+import type { ChartData } from "../types";
 
 type Message = { role: "user" | "bot"; text: string };
 
 const examples = [
   "What is the failure rate for Corrosion tests?",
-  "How many PASS for Spill Buckets tests?",
+  "Show me a pie chart of pass/fail for Spill Buckets",
+  "Plot a line chart of test trends over time",
+  "Draw a doughnut chart of all test results",
+  "Compare corrosion vs spill buckets",
+  "What's the pass:fail ratio for ATG probes?",
   "Show me records for store #3",
   "What certificates are expiring soon?",
-  "Show me a chart of all test results",
 ];
-
-function drawChart(el: HTMLDivElement | null, chart: { type: string; labels: string[]; values: number[] }) {
-  if (!el || !chart.labels?.length) return;
-  el.innerHTML = "";
-  const w = Math.min(400, el.clientWidth - 40 || 360), h = 220;
-  const m = { top: 20, right: 20, bottom: 50, left: 45 };
-  const iw = w - m.left - m.right, ih = h - m.top - m.bottom;
-
-  if (chart.type === "pie") {
-    const r = Math.min(iw, ih) / 2;
-    const svg = d3.select(el).append("svg").attr("width", w).attr("height", h)
-      .append("g").attr("transform", `translate(${w / 2},${h / 2})`);
-    const color = d3.scaleOrdinal(d3.schemeSet2);
-    const pie = d3.pie<string>().value((_, i) => chart.values[i]);
-    const arc = d3.arc<d3.PieArcDatum<string>>().innerRadius(0).outerRadius(r);
-    svg.selectAll("path").data(pie(chart.labels)).enter().append("path")
-      .attr("d", arc).attr("fill", (_, i) => color(i.toString()));
-    return;
-  }
-
-  const svg = d3.select(el).append("svg").attr("width", w).attr("height", h)
-    .append("g").attr("transform", `translate(${m.left},${m.top})`);
-  const x = d3.scaleBand().domain(chart.labels).range([0, iw]).padding(0.2);
-  const y = d3.scaleLinear().domain([0, d3.max(chart.values)! * 1.1 || 1]).range([ih, 0]);
-  svg.append("g").call(d3.axisLeft(y).ticks(4));
-  svg.append("g").attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x))
-    .selectAll("text").attr("transform", "rotate(-20)").style("text-anchor", "end").attr("dx", "-.3em").attr("dy", ".3em");
-  svg.selectAll("rect").data(chart.values).enter().append("rect")
-    .attr("x", (_, i) => x(chart.labels[i])!).attr("y", (d) => y(d))
-    .attr("width", x.bandwidth()).attr("height", (d) => ih - y(d))
-    .attr("fill", "#3b82f6").attr("rx", 3);
-}
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", text: "Hello! Ask me about your compliance data — failure rates, status counts, or specific records." },
+    { role: "bot", text: "Hello! Ask me about your compliance data — failure rates, charts, comparisons, or specific records." },
   ]);
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<"nlu" | "gemini">("nlu");
-  const [chart, setChart] = useState<{ type: string; labels: string[]; values: number[] } | null>(null);
+  const [chart, setChart] = useState<ChartData | null>(null);
   const [sql, setSql] = useState("");
   const [loading, setLoading] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-  useEffect(() => { if (chart && chartRef.current) drawChart(chartRef.current, chart); }, [chart]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,8 +102,11 @@ export default function Chat() {
           </Card>
           {chart && (
             <Card className="p-4">
-              <h3 className="text-sm font-semibold mb-2">Visualization</h3>
-              <div ref={chartRef} className="min-h-[180px]" />
+              <h3 className="text-sm font-semibold mb-2">
+                {chart.title || "Visualization"}
+                <span className="ml-2 text-xs font-normal text-gray-400 uppercase">{chart.type}</span>
+              </h3>
+              <ChartRenderer chart={chart} className="min-h-[200px]" />
             </Card>
           )}
           {sql && (

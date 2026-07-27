@@ -40,12 +40,32 @@ export interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+export interface ChartDataset {
+  label: string;
+  data: (number | { x: number; y: number })[];
+  backgroundColor?: string | string[];
+  borderColor?: string;
+  borderWidth?: number;
+  pointRadius?: number;
+  fill?: boolean;
+}
+
+export interface ChartData {
+  type: string;
+  title?: string;
+  labels: string[];
+  values: (number | string)[];
+  datasets?: ChartDataset[];
+  xLabel?: string;
+  yLabel?: string;
+}
+
 export interface ChatResponse {
   intent: string;
   answer: string;
   sql: string;
   rows: Record<string, unknown>[];
-  chart: { type: string; labels: string[]; values: number[] } | null;
+  chart: ChartData | null;
   mode: string;
 }
 
