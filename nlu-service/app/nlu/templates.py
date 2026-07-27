@@ -27,8 +27,8 @@ TEST_STATUS_COLUMNS = {
 
 TEST_DATE_COLUMNS = {
     "Corrosion": '"corrosionTestDate"',
-    "Spill Buckets": '"spillBucketTestDate"',
-    "Spill Bucket": '"spillBucketTestDate"',
+    "Spill Buckets": '"spillBucketsTestDate"',
+    "Spill Bucket": '"spillBucketsTestDate"',
     "Overfill Protection Device": '"overfillProtectionDeviceTestDate"',
     "Overfill Protection": '"overfillProtectionDeviceTestDate"',
     "LLD": '"lldLineTightnessTestDate"',
@@ -41,6 +41,33 @@ TEST_DATE_COLUMNS = {
     "Stage 1": '"stage1TestDate"',
     "Stage": '"stage1TestDate"',
 }
+
+ALL_TEST_COLUMNS = [
+    ("Corrosion", '"corrosionTestStatus"', '"corrosionTestDate"'),
+    ("Spill Buckets", '"spillBucketTestStatus"', '"spillBucketsTestDate"'),
+    ("Overfill Protection", '"overfillProtectionDeviceTestStatus"', '"overfillProtectionDeviceTestDate"'),
+    ("LLD / Line Tightness", '"lldLineTightnessTestStatus"', '"lldLineTightnessTestDate"'),
+    ("ATG / Probes", '"atgProbesTestStatus"', '"atgProbesTestDate"'),
+    ("Sump", '"sumpTestStatus"', '"sumpTestDate"'),
+    ("Stage 1", '"stage1TestStatus"', '"stage1TestDate"'),
+]
+
+
+def _where_clause(
+    city: Optional[str] = None,
+    store_number: Optional[int] = None,
+    test_type: Optional[str] = None,
+    date_col: Optional[str] = None,
+) -> tuple[list[str], list]:
+    clauses: list[str] = []
+    params: list = []
+    if city:
+        clauses.append('"city" = %s')
+        params.append(city)
+    if store_number:
+        clauses.append('"storeNumber" = %s')
+        params.append(store_number)
+    return clauses, params
 
 
 def failure_rate_sql(
@@ -186,6 +213,85 @@ def chart_data_sql() -> tuple[str, tuple]:
         "  count(*) FILTER (WHERE \"stage1TestStatus\" = 'PASS'), "
         "  count(*) FILTER (WHERE \"stage1TestStatus\" = 'FAIL') "
         'FROM "ComplianceRecord"'
+    )
+    return (sql, ())
+
+
+def pass_fail_ratio_sql(test_type: Optional[str] = None) -> tuple[str, tuple]:
+    """Return pass/fail counts for a single test type or all test types."""
+    if test_type:
+        col = TEST_STATUS_COLUMNS.get(test_type, '"corrosionTestStatus"')
+        sql = (
+            f"SELECT '{test_type}' AS test, "
+            f"  count(*) FILTER (WHERE {col} = 'PASS') AS pass_count, "
+            f"  count(*) FILTER (WHERE {col} = 'FAIL') AS fail_count "
+            f'FROM "ComplianceRecord" '
+            f'WHERE {col} IS NOT NULL'
+        )
+        return (sql, ())
+    return chart_data_sql()
+
+
+def trend_sql(test_type: Optional[str] = None) -> tuple[str, tuple]:
+    """Return pass/fail counts grouped by month for trend visualization."""
+    if test_type:
+        status_col = TEST_STATUS_COLUMNS.get(test_type, '"corrosionTestStatus"')
+        date_col = TEST_DATE_COLUMNS.get(test_type, '"corrosionTestDate"')
+        sql = (
+            f"SELECT to_char({date_col}, 'YYYY-MM') AS period, "
+            f"  count(*) FILTER (WHERE {status_col} = 'PASS') AS pass_count, "
+            f"  count(*) FILTER (WHERE {status_col} = 'FAIL') AS fail_count "
+            f'FROM "ComplianceRecord" '
+            f'WHERE {status_col} IS NOT NULL AND {date_col} IS NOT NULL '
+            f"GROUP BY period "
+            f"ORDER BY period"
+        )
+    else:
+        # Aggregate across all test types by month
+        unions = []
+        for name, status_col, date_col in ALL_TEST_COLUMNS:
+            unions.append(
+                f"SELECT to_char({date_col}, 'YYYY-MM') AS period, "
+                f"  count(*) FILTER (WHERE {status_col} = 'PASS') AS pass_count, "
+                f"  count(*) FILTER (WHERE {status_col} = 'FAIL') AS fail_count "
+                f'FROM "ComplianceRecord" '
+                f'WHERE {status_col} IS NOT NULL AND {date_col} IS NOT NULL '
+                f"GROUP BY period"
+            )
+        sql = " UNION ALL ".join(unions) + " ORDER BY period"
+    return (sql, ())
+
+
+def scatter_data_sql(test_type_a: str, test_type_b: str) -> tuple[str, tuple]:
+    """Return paired results for two tests on the same record (scatter plot)."""
+    col_a = TEST_STATUS_COLUMNS.get(test_type_a, '"corrosionTestStatus"')
+    col_b = TEST_STATUS_COLUMNS.get(test_type_b, '"corrosionTestStatus"')
+    sql = (
+        f"SELECT {col_a} AS test_a, {col_b} AS test_b, "
+        f'  "storeNumber", "city" '
+        f'FROM "ComplianceRecord" '
+        f"WHERE {col_a} IS NOT NULL AND {col_b} IS NOT NULL "
+        f'ORDER BY "storeNumber"'
+    )
+    return (sql, ())
+
+
+def comparison_sql(test_type_a: str, test_type_b: str) -> tuple[str, tuple]:
+    """Return pass/fail counts for two test types (for grouped bar / comparison chart)."""
+    col_a = TEST_STATUS_COLUMNS.get(test_type_a, '"corrosionTestStatus"')
+    col_b = TEST_STATUS_COLUMNS.get(test_type_b, '"corrosionTestStatus"')
+    sql = (
+        f"SELECT '{test_type_a}' AS test, "
+        f"  count(*) FILTER (WHERE {col_a} = 'PASS') AS pass_count, "
+        f"  count(*) FILTER (WHERE {col_a} = 'FAIL') AS fail_count, "
+        f"  count(*) FILTER (WHERE {col_a} IS NOT NULL) AS total "
+        f'FROM "ComplianceRecord" '
+        f"UNION ALL "
+        f"SELECT '{test_type_b}', "
+        f"  count(*) FILTER (WHERE {col_b} = 'PASS'), "
+        f"  count(*) FILTER (WHERE {col_b} = 'FAIL'), "
+        f"  count(*) FILTER (WHERE {col_b} IS NOT NULL) "
+        f'FROM "ComplianceRecord"'
     )
     return (sql, ())
 
