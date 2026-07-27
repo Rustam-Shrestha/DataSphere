@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo [OK] Node.js found: 
+echo [OK] Node.js: 
 node -v
 
 :: Check npm
@@ -24,19 +24,19 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo [OK] npm found:
+echo [OK] npm:
 npm -v
 
-:: Install Node dependencies
+:: Install backend dependencies
 echo.
-echo Installing Node dependencies...
+echo Installing backend dependencies...
 call npm install
 if %errorlevel% neq 0 (
-    echo [FAIL] npm install failed
+    echo [FAIL] Backend npm install failed
     pause
     exit /b 1
 )
-echo [OK] Node dependencies installed
+echo [OK] Backend dependencies installed
 
 :: Generate Prisma client
 echo.
@@ -49,6 +49,30 @@ if %errorlevel% neq 0 (
 )
 echo [OK] Prisma client generated
 
+:: Install client dependencies
+echo.
+echo Installing client dependencies...
+cd client
+call npm install
+if %errorlevel% neq 0 (
+    echo [FAIL] Client npm install failed
+    pause
+    exit /b 1
+)
+echo [OK] Client dependencies installed
+
+:: Build client
+echo.
+echo Building React frontend...
+call npm run build
+if %errorlevel% neq 0 (
+    echo [FAIL] Client build failed
+    pause
+    exit /b 1
+)
+echo [OK] React frontend built
+cd ..
+
 :: Check Python
 where python >nul 2>&1
 if %errorlevel% neq 0 (
@@ -56,7 +80,7 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
-echo [OK] Python found:
+echo [OK] Python:
 python --version
 
 :: Create Python venv
@@ -90,7 +114,7 @@ echo.
 echo Downloading spaCy language model...
 call nlu-service\.venv\Scripts\python -m spacy download en_core_web_sm
 if %errorlevel% neq 0 (
-    echo [WARN] spaCy model download failed (optional, some features may not work)
+    echo [WARN] spaCy model download failed (optional)
 ) else (
     echo [OK] spaCy model downloaded
 )
@@ -100,13 +124,13 @@ echo.
 echo Pushing database schema...
 call npx prisma db push
 if %errorlevel% neq 0 (
-    echo [WARN] DB push failed — make sure PostgreSQL is running and .env is configured
+    echo [WARN] DB push failed. Ensure PostgreSQL is running and .env is configured.
 )
 
 :: Copy .env if missing
 if not exist ".env" (
     copy .env.example .env
-    echo [OK] Created .env from .env.example — edit it with your settings
+    echo [OK] Created .env from .env.example
 )
 
 :: Copy NLU .env if missing
@@ -121,8 +145,7 @@ echo ========================================
 echo  Setup complete!
 echo ========================================
 echo.
-echo To start the services, run:  start.bat
-echo.
-echo Then open:  http://localhost:4000
+echo To start:  start.bat
+echo Then open: http://localhost:4000
 echo.
 pause

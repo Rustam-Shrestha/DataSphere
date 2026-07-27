@@ -16,12 +16,17 @@ const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(__dirname, "..", "client", "dist")));
+app.use(express.static(path.join(__dirname, "..", "client", "public")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/records", complianceRecordsRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+
+app.get("/{*splat}", (_req, res) => {
+  res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
+});
 
 app.use(errorHandler);
 

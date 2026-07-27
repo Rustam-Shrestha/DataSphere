@@ -2,10 +2,11 @@
 node_modules/
 dist/
 
-# Env
+# Env (keep .env.example tracked)
 .env
 .env.local
-*.env
+.env.*
+!.env.example
 
 # Uploads
 uploads/*
@@ -13,14 +14,19 @@ uploads/*
 
 # Python NLU service
 nlu-service/.venv/
-nlu-service/__pycache__/
 nlu-service/.env
+nlu-service/*.egg-info/
+
+# Python general
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 .eggs/
-dist/
+
+# Client build
+client/dist/
+client/node_modules/
 
 # IDE
 .vscode/
@@ -40,3 +46,6 @@ logs/
 
 # Prisma
 prisma/migrations/
+
+# TypeScript build info
+*.tsbuildinfo

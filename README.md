@@ -2,14 +2,17 @@
 
 A compliance record management system for tracking fuel station inspections and test results. Upload Excel/CSV exports, browse records, and query data via natural language — powered by a custom NLU engine or Gemini AI.
 
-## Architecture
+---
 
-Two services run side-by-side:
+## Architecture
 
 | Process | Port | Tech | Purpose |
 |---------|------|------|---------|
 | **Node Backend** | `4000` | Express 5 + Prisma + PostgreSQL | REST API, file upload, auth, serves frontend, Gemini proxy |
-| **NLU Service** | `8000` | FastAPI + spaCy + psycopg2 | Rule-based natural language → SQL conversion |
+| **React Frontend** | served by backend | React 19 + TanStack Query + Zustand + Tailwind CSS | SPA with 4 pages |
+| **NLU Service** | `8000` | FastAPI + psycopg2 + spaCy | Rule-based NLU → SQL conversion |
+
+---
 
 ## Quick Start
 
@@ -25,198 +28,119 @@ Two services run side-by-side:
 setup.bat
 ```
 
-This will:
-1. Install Node dependencies (`npm install`)
-2. Generate Prisma client
-3. Create Python virtual environment (`.venv`)
-4. Install Python packages
-5. Download spaCy language model
-6. Push database schema to PostgreSQL
-7. Create `.env` files from defaults
+This installs everything, builds the React frontend, creates the Python venv, and pushes the DB schema.
 
-### Manual setup
-
-```bash
-# Install Node dependencies
-npm install
-
-# Generate Prisma client
-npx prisma generate
-
-# Push schema to database
-npx prisma db push
-
-# Python virtual environment
-python -m venv nlu-service\.venv
-nlu-service\.venv\Scripts\pip install -r nlu-service\requirements.txt
-nlu-service\.venv\Scripts\python -m spacy download en_core_web_sm
-
-# Edit environment files
-# .env          — main app config
-# nlu-service\.env — NLU service config
-```
-
-### Start the services
+### Start
 
 ```
 start.bat
 ```
 
-Or start each manually:
-
-```bash
-# Terminal 1 — Node backend
-npx tsx src/server.ts
-
-# Terminal 2 — NLU service
-cd nlu-service
-.venv\Scripts\activate
-uvicorn app.main:app --reload --port 8000
-```
-
 Then open **http://localhost:4000**
+
+---
 
 ## Pages
 
-| Page | Route | Description |
-|------|-------|-------------|
-| **Upload** | `/` | Login/Register, upload Excel/CSV files, view recent uploads |
-| **Data** | `/data.html` | Searchable, paginated table of all records with inline edit/delete |
-| **Chat** | `/chatbot.html` | Ask questions in natural language with two modes |
-| **Dashboard** | `/dashboard.html` | D3 charts, stats, expiry overview |
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | **Upload** | Login/register, upload Excel/CSV, view recent uploads |
+| `/data` | **Data** | Searchable, paginated table with inline edit/delete modal |
+| `/chat` | **Chat** | NL questions with two modes (NLU Engine / Gemini AI) |
+| `/dashboard` | **Dashboard** | D3 charts, stats cards, expiry overview |
+
+---
 
 ## Chat Modes
 
 ### NLU Engine (default)
-Rule-based intent classification + entity extraction → fixed SQL templates. Runs locally via the Python FastAPI service.
-
-- Failure rates by test type
-- Pass/fail counts
-- List records by store or city
-- Expiring/overdue certificates
-- Chart data aggregation
+Rule-based intent classification + entity extraction running locally via Python FastAPI. Understands failure rates, pass/fail counts, store lookups, expiry checks.
 
 ### Gemini AI
-Requires `GEMINI_API_KEY` in `.env`. Uses Google's Gemini 2.0 Flash model to answer compliance questions. The key provided in the project is pre-configured.
+Requires `GEMINI_API_KEY` in `.env`. Uses Google Gemini 2.0 Flash for open-ended questions about compliance data.
 
-Switch modes using the toggle buttons in the chat interface.
+---
 
-## Database Schema
+## Database
 
-### ComplianceRecord (flat table)
+### `ComplianceRecord` (single flat table)
 
-| Column | Type | Source |
-|--------|------|--------|
-| storeNumber | Int | Store# |
-| city | String | CITY |
-| streetName | String | Street Name |
-| facilityId | Int? | Facility ID# |
-| channelOfTrade | String? | Channel Of Trade |
-| deliveryCertificateExpiredDate | DateTime? | Delivery Certificate Expired Date |
-| insuranceExpiredDate | DateTime? | Insurance Expired Date |
-| corrosionTestDate / Status | DateTime? / String? | Corrosion Test Date / Status |
-| spillBucketsTestDate / Status | DateTime? / String? | Spill Buckets Test Date / Status |
-| overfillProtectionDeviceTestDate / Status | DateTime? / String? | Overfill Protection Device Test Date / Status |
-| lldLineTightnessTestDate / Status | DateTime? / String? | LLD / Line Tightness Test Date / Status |
-| atgProbesTestDate / Status | DateTime? / String? | ATG / Probes Test Date / Status |
-| sumpTestDate / Status | DateTime? / String? | Sump Test Date / Status |
-| stage1TestDate / Status | DateTime? / String? | Stage 1 Test Date / Status |
+| Column | Type |
+|--------|------|
+| storeNumber | Int |
+| city | String |
+| streetName | String |
+| facilityId | Int? |
+| channelOfTrade | String? |
+| deliveryCertificateExpiredDate | DateTime? |
+| insuranceExpiredDate | DateTime? |
+| corrosionTestDate / Status | DateTime? / String? |
+| spillBucketsTestDate / Status | DateTime? / String? |
+| overfillProtectionDeviceTestDate / Status | DateTime? / String? |
+| lldLineTightnessTestDate / Status | DateTime? / String? |
+| atgProbesTestDate / Status | DateTime? / String? |
+| sumpTestDate / Status | DateTime? / String? |
+| stage1TestDate / Status | DateTime? / String? |
 
-### UploadedFile
-Tracks imported files with SHA256 checksum for deduplication.
-
-### User
-Basic authentication (register/login) with JWT tokens.
+---
 
 ## API Endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/auth/register` | No | Register new user |
-| POST | `/api/auth/login` | No | Login, get JWT token |
-| POST | `/api/uploads` | Yes | Upload Excel/CSV file |
-| GET | `/api/uploads` | No | List recent uploads |
+| POST | `/api/auth/register` | No | Register |
+| POST | `/api/auth/login` | No | Login |
+| POST | `/api/uploads` | Yes | Upload file |
+| GET | `/api/uploads` | No | List uploads |
 | GET | `/api/records` | No | List records (query: page, pageSize, search) |
-| GET | `/api/records/:id` | No | Get single record |
+| GET | `/api/records/:id` | No | Get record |
 | PATCH | `/api/records/:id` | Yes | Update record |
 | DELETE | `/api/records/:id` | Yes | Delete record |
-| POST | `/api/chatbot/query` | No | Chat query (body: { question, mode }) |
+| POST | `/api/chatbot/query` | No | Chat query `{ question, mode }` |
 
-## Environment Variables
+---
 
-### `.env` (project root)
-```
-DATABASE_URL=postgresql://user:pass@localhost:5432/compliance_db
-JWT_SECRET=change_me_before_deploy
-PORT=4000
-UPLOAD_DIR=./uploads
-NLU_SERVICE_URL=http://localhost:8000
-GEMINI_API_KEY=your_gemini_api_key
-NODE_ENV=development
-```
+## Tech Stack
 
-### `nlu-service/.env`
-```
-DATABASE_URL=postgresql://user:pass@localhost:5432/compliance_db
-PORT=8000
-```
+- **Frontend:** React 19, TypeScript, TanStack Query, Zustand, Tailwind CSS, D3.js, React Router
+- **Backend:** Express 5, Prisma, Zod, JWT, Multer
+- **NLU:** FastAPI, psycopg2, dateparser, rapidfuzz, spaCy
 
-## Import Format
-
-The system expects Excel (.xlsx, .xls) or CSV files with these columns:
-
-```
-Store#, CITY, Street Name, Facility ID#, Channel Of Trade,
-Delivery Certificate Expired Date, Insurance Expired Date,
-Corrosion Test Date, Corrosion Test Status,
-Spill Buckets Test Date, Spill Bucket Test Status,
-Overfill Protection Device Test Date, Overfill Protection Device Test Status,
-LLD / Line Tightness Test Date, LLD / Line Tightness Test Status,
-ATG / Probes Test Date, ATG / Probes Test Status,
-SumpTest Date, Sump Test Status,
-Stage 1 Test Date, Stage 1 Test Status
-```
-
-Columns not found are left as null. Rows missing Store#, CITY, and Street Name are skipped.
+---
 
 ## Project Structure
 
 ```
 compliance-bot/
-├── src/                      # Node.js backend
-│   ├── app.ts               # Express app setup
-│   ├── server.ts            # Entry point
-│   ├── config/              # env.ts, db.ts
-│   ├── middleware/           # auth, error, upload
-│   ├── lib/parsers/         # Excel, CSV parsers
-│   ├── modules/
-│   │   ├── auth/            # Register/login
-│   │   ├── uploads/         # File import
-│   │   ├── complianceRecords/ # CRUD
-│   │   └── chatbot/         # NLU + Gemini proxy
-│   └── utils/               # response helper, logger
-├── nlu-service/              # Python NLU service
+├── src/                    # Node.js backend
+│   ├── app.ts             # Express setup, serves React build
+│   ├── server.ts          # Entry point
+│   ├── config/            # env.ts, db.ts
+│   ├── middleware/        # auth, error, upload
+│   ├── lib/parsers/       # Excel, CSV parsers
+│   ├── modules/           # auth, uploads, complianceRecords, chatbot
+│   └── utils/             # response helper, logger
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── main.tsx       # Entry
+│   │   ├── App.tsx        # Router + providers
+│   │   ├── pages/         # Upload, Data, Chat, Dashboard
+│   │   ├── components/    # Layout, Navbar, StatusBadge, EditModal
+│   │   ├── hooks/         # TanStack Query hooks
+│   │   ├── lib/           # API client, Zustand store
+│   │   └── types/         # TypeScript interfaces
+│   ├── index.html
+│   ├── vite.config.ts
+│   └── tailwind.config.js
+├── nlu-service/            # Python NLU service
 │   ├── app/
-│   │   ├── main.py          # FastAPI app
-│   │   ├── config.py        # Environment
-│   │   ├── db.py            # Database helpers
-│   │   ├── schemas.py       # Pydantic models
-│   │   └── nlu/
-│   │       ├── intents.py   # Intent classification
-│   │       ├── entities.py  # Entity extraction
-│   │       ├── templates.py # SQL templates
-│   │       └── pipeline.py  # Query pipeline
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── db.py
+│   │   ├── schemas.py
+│   │   └── nlu/           # intents, entities, templates, pipeline
 │   └── requirements.txt
-├── public/                   # Static frontend
-│   ├── index.html           # Upload page
-│   ├── data.html            # CRUD page
-│   ├── chatbot.html         # Chat page
-│   ├── dashboard.html       # Dashboard page
-│   ├── css/style.css
-│   └── js/
-├── prisma/schema.prisma     # Database schema
-├── uploads/                  # Uploaded files (gitignored)
-├── setup.bat                 # One-click setup
-├── start.bat                 # Launch both services
+├── setup.bat
+├── start.bat
 └── .gitignore
 ```
