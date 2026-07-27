@@ -2,6 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { errorHandler } from "./middleware/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
@@ -24,8 +25,17 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/records", complianceRecordsRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 
+const indexHtml = path.join(__dirname, "..", "client", "dist", "index.html");
+
 app.get("/{*splat}", (_req, res) => {
-  res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
+  if (fs.existsSync(indexHtml)) {
+    res.sendFile(indexHtml);
+  } else {
+    res.status(200).json({
+      success: true,
+      message: "Backend API is running. Frontend is being served via Vite dev server (http://localhost:5173) or build the client with: cd client && npm run build",
+    });
+  }
 });
 
 app.use(errorHandler);
