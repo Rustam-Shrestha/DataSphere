@@ -3,43 +3,180 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Fonts */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-heading: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Primary Forest Green Palette */
+    --primary: #166534;
+    --primary-hover: #15803D;
+    --primary-active: #14532D;
+    --primary-soft: #DCFCE7;
+    --accent-green: #22C55E;
+
+    /* Secondary Slate Navy */
+    --secondary: #0F172A;
+
+    /* Backgrounds & Surfaces */
+    --bg-canvas: #FAFAF9;
+    --surface: #FFFFFF;
+    --surface-alt: #F5F7F6;
+    --surface-muted: #F1F5F9;
+
+    /* Typography Neutrals */
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+
+    /* Borders */
+    --border: #E5E7EB;
+    --border-strong: #CBD5E1;
+
+    /* Semantic */
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --info: #0284C7;
+
+    /* Elevation & Shadows */
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.06);
+    --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.05);
+
+    /* Radii */
+    --radius-control: 6px;
+    --radius-button: 8px;
+    --radius-card: 12px;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
   body {
-    @apply min-h-screen;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: var(--font-mono);
   }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-200;
   }
+
   .btn {
-    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
+    @apply btn bg-[#166534] text-white hover:bg-[#15803D] active:bg-[#14532D] shadow-sm;
   }
+
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100;
+    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 shadow-xs;
   }
+
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+    @apply btn bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-xs;
   }
+
   .input {
-    @apply w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition;
+    @apply w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#166534]/30 focus:border-[#166534] transition bg-white;
   }
+
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
   }
+
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide;
   }
+
   .badge-pass {
-    @apply badge bg-emerald-100 text-emerald-800;
+    @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200/60;
   }
+
   .badge-fail {
-    @apply badge bg-red-100 text-red-800;
+    @apply badge bg-rose-50 text-rose-700 border border-rose-200/60;
   }
+
   .badge-pending {
-    @apply badge bg-amber-100 text-amber-800;
+    @apply badge bg-amber-50 text-amber-700 border border-amber-200/60;
   }
+}
+
+/* Subtle Engineering Grid background */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Clean, restrained Card shadow */
+.card-shadow {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.subtle-shadow {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+/* Monospace Section Tag */
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #166534;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }
