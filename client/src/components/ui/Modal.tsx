@@ -53,30 +53,30 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
         className={cn(
-          "bg-white rounded-2xl shadow-xl border border-gray-200/80 w-full overflow-hidden flex flex-col max-h-[90vh]",
+          "bg-white rounded-xl shadow-level3 border border-slate-200 w-full overflow-hidden flex flex-col max-h-[90vh]",
           widthClasses[maxWidth],
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
           <div className="flex items-center gap-3">
-            {icon && <div className="p-2 bg-emerald-50 text-[#166534] rounded-lg border border-emerald-100">{icon}</div>}
+            {icon && <div className="p-2 bg-[#DCFCE7] text-[#15803D] rounded-md border border-emerald-200">{icon}</div>}
             <div>
-              <h2 className="text-base font-semibold text-gray-900 font-heading">{title}</h2>
-              {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+              <h2 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h2>
+              {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="size-5" />
@@ -87,7 +87,7 @@ export function Modal({
         <div className="p-6 overflow-y-auto flex-1">{children}</div>
 
         {/* Footer */}
-        {footer && <div className="px-6 py-4 bg-gray-50/70 border-t border-gray-100 flex items-center gap-3 justify-end">{footer}</div>}
+        {footer && <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-200 flex items-center gap-3 justify-end">{footer}</div>}
       </div>
     </div>
   );

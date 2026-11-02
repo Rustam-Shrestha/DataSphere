@@ -12,8 +12,8 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-white rounded-xl border border-gray-200/80 shadow-xs transition-all duration-200",
-          hoverable && "hover:border-gray-300 hover:shadow-soft hover:-translate-y-0.5",
+          "bg-white rounded-lg border border-slate-200 shadow-subtle transition-all duration-150",
+          hoverable && "hover:border-slate-300 hover:shadow-level2",
           className
         )}
         {...props}
@@ -31,7 +31,11 @@ export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ children, className = "", ...props }, ref) => (
-    <div ref={ref} className={cn("p-5 border-b border-gray-100 flex items-center justify-between gap-3", className)} {...props}>
+    <div
+      ref={ref}
+      className={cn("px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-4", className)}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -45,8 +49,12 @@ export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ icon, children, className = "", ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-base font-semibold text-gray-900 font-heading flex items-center gap-2", className)} {...props}>
-      {icon && <span className="text-[#166534] shrink-0">{icon}</span>}
+    <h3
+      ref={ref}
+      className={cn("text-base font-semibold text-slate-900 flex items-center gap-2 tracking-tight", className)}
+      {...props}
+    >
+      {icon && <span className="text-[#15803D] shrink-0">{icon}</span>}
       <span>{children}</span>
     </h3>
   )
@@ -59,7 +67,7 @@ export interface CardDescriptionProps extends HTMLAttributes<HTMLParagraphElemen
 
 export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
   ({ children, className = "", ...props }, ref) => (
-    <p ref={ref} className={cn("text-xs text-gray-500 mt-1", className)} {...props}>
+    <p ref={ref} className={cn("text-xs text-slate-500 mt-1", className)} {...props}>
       {children}
     </p>
   )
@@ -72,7 +80,7 @@ export interface CardContentProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
   ({ children, className = "", ...props }, ref) => (
-    <div ref={ref} className={cn("p-5", className)} {...props}>
+    <div ref={ref} className={cn("p-6", className)} {...props}>
       {children}
     </div>
   )
@@ -85,7 +93,11 @@ export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ children, className = "", ...props }, ref) => (
-    <div ref={ref} className={cn("p-4 bg-gray-50/60 border-t border-gray-100 rounded-b-xl flex items-center gap-3", className)} {...props}>
+    <div
+      ref={ref}
+      className={cn("px-6 py-4 bg-slate-50/70 border-t border-slate-200 rounded-b-lg flex items-center gap-3", className)}
+      {...props}
+    >
       {children}
     </div>
   )

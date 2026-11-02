@@ -15,18 +15,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-[#166534] text-white hover:bg-[#15803D] active:bg-[#14532D] shadow-xs focus-visible:ring-[#166534]/30",
-  secondary: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100 shadow-xs focus-visible:ring-gray-300",
-  outline: "bg-transparent text-[#166534] border border-[#166534] hover:bg-emerald-50 active:bg-emerald-100/60 focus-visible:ring-[#166534]/30",
-  ghost: "bg-transparent text-gray-700 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200/70 border-transparent",
-  danger: "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] shadow-xs focus-visible:ring-red-400",
-  subtle: "bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0] active:bg-[#86EFAC] focus-visible:ring-[#166534]/30",
+  primary: "bg-[#15803D] text-white hover:bg-[#166534] active:bg-[#14532D] shadow-subtle focus-visible:ring-[#15803D]/30 border-transparent",
+  secondary: "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 shadow-subtle focus-visible:ring-slate-300",
+  outline: "bg-transparent text-[#15803D] border border-[#15803D] hover:bg-[#DCFCE7]/50 active:bg-[#DCFCE7] focus-visible:ring-[#15803D]/30",
+  ghost: "bg-transparent text-slate-700 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200/70 border-transparent",
+  danger: "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] shadow-subtle focus-visible:ring-red-400 border-transparent",
+  subtle: "bg-[#DCFCE7] text-[#15803D] hover:bg-[#BBF7D0] active:bg-[#86EFAC] focus-visible:ring-[#15803D]/30 border-transparent",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "h-8 px-2.5 text-xs gap-1.5 rounded-[6px] font-medium",
-  md: "h-9 px-3.5 text-sm gap-2 rounded-[8px] font-medium",
-  lg: "h-11 px-5 text-base gap-2.5 rounded-[8px] font-semibold",
+  sm: "h-8 px-3 text-xs gap-1.5 rounded-md font-medium",
+  md: "h-10 px-4 text-sm gap-2 rounded-md font-semibold",
+  lg: "h-11 px-5 text-base gap-2.5 rounded-md font-semibold",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

@@ -4,50 +4,50 @@
 
 @layer base {
   :root {
-    /* Fonts */
+    /* Typography: Inter font stack only (Section 10) */
     --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-heading: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* Primary Forest Green Palette */
-    --primary: #166534;
-    --primary-hover: #15803D;
+    /* Primary Color Palette (Section 6) */
+    --primary: #15803D;
+    --primary-hover: #166534;
     --primary-active: #14532D;
     --primary-soft: #DCFCE7;
-    --accent-green: #22C55E;
 
-    /* Secondary Slate Navy */
-    --secondary: #0F172A;
+    /* Neutral Palette (Section 7) */
+    --text-primary: #0F172A;
+    --text-secondary: #334155;
+    --text-muted: #64748B;
+    --text-subtle: #94A3B8;
 
-    /* Backgrounds & Surfaces */
-    --bg-canvas: #FAFAF9;
+    --bg-canvas: #F8FAFC;
     --surface: #FFFFFF;
-    --surface-alt: #F5F7F6;
-    --surface-muted: #F1F5F9;
+    --surface-subtle: #F1F5F9;
 
-    /* Typography Neutrals */
-    --text-primary: #111827;
-    --text-secondary: #6B7280;
-    --text-muted: #9CA3AF;
-
-    /* Borders */
-    --border: #E5E7EB;
+    --border: #E2E8F0;
     --border-strong: #CBD5E1;
 
-    /* Semantic */
+    /* Semantic Palette (Section 8) */
     --success: #16A34A;
+    --success-soft: #DCFCE7;
     --warning: #D97706;
+    --warning-soft: #FEF3C7;
     --danger: #DC2626;
+    --danger-soft: #FEE2E2;
     --info: #0284C7;
+    --info-soft: #E0F2FE;
 
-    /* Elevation & Shadows */
-    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.06);
-    --shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.05);
+    /* Elevation & Shadows (Section 18) */
+    --shadow-level-1: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --shadow-level-2: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --shadow-level-3: 0 12px 32px rgba(15, 23, 42, 0.12);
 
-    /* Radii */
+    /* Fixed Radius System (Section 16) */
     --radius-control: 6px;
-    --radius-button: 8px;
-    --radius-card: 12px;
+    --radius-button: 6px;
+    --radius-card: 8px;
+    --radius-modal: 12px;
   }
 
   * {
@@ -81,7 +81,7 @@
   h5,
   h6 {
     font-family: var(--font-heading);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.015em;
     color: var(--text-primary);
   }
 
@@ -90,67 +90,86 @@
   .font-mono {
     font-family: var(--font-mono);
   }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer components {
+  /* Card Standard (Section 29) */
   .card {
-    @apply bg-white rounded-xl border border-gray-200 shadow-sm transition-all duration-200;
+    @apply bg-white rounded-lg border border-slate-200 p-6 shadow-subtle transition-all duration-150;
   }
 
+  /* Button Standard (Section 19) */
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center h-10 px-4 rounded-md text-sm font-semibold transition-all duration-150 cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
   }
 
   .btn-primary {
-    @apply btn bg-[#166534] text-white hover:bg-[#15803D] active:bg-[#14532D] shadow-sm;
+    @apply btn bg-[#15803D] text-white hover:bg-[#166534] active:bg-[#14532D] shadow-subtle focus-visible:ring-[#15803D]/30;
   }
 
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 shadow-xs;
+    @apply btn bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 active:bg-slate-100 shadow-subtle focus-visible:ring-slate-300;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-slate-700 hover:bg-slate-100 active:bg-slate-200/70 border-transparent;
   }
 
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-xs;
+    @apply btn bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] shadow-subtle focus-visible:ring-red-400;
   }
 
+  /* Input Standard (Section 20) */
   .input {
-    @apply w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#166534]/30 focus:border-[#166534] transition bg-white;
+    @apply w-full h-10 px-3 text-sm rounded-md border border-slate-300 bg-white text-slate-900 placeholder-slate-400 transition-all duration-150 focus:outline-none focus:border-[#15803D] focus:ring-2 focus:ring-emerald-700/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed;
   }
 
+  /* Form Label Standard (Section 21) */
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1.5;
+    @apply block text-sm font-medium text-slate-700 mb-2;
   }
 
+  /* Badge Standard (Section 33) - Pill reserved for badges */
   .badge {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium tracking-wide;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold select-none;
   }
 
   .badge-pass {
-    @apply badge bg-emerald-50 text-emerald-700 border border-emerald-200/60;
+    @apply badge bg-[#DCFCE7] text-[#15803D] border border-emerald-200;
   }
 
   .badge-fail {
-    @apply badge bg-rose-50 text-rose-700 border border-rose-200/60;
+    @apply badge bg-[#FEE2E2] text-[#DC2626] border border-red-200;
   }
 
   .badge-pending {
-    @apply badge bg-amber-50 text-amber-700 border border-amber-200/60;
+    @apply badge bg-[#FEF3C7] text-[#D97706] border border-amber-200;
+  }
+
+  .badge-info {
+    @apply badge bg-[#E0F2FE] text-[#0284C7] border border-sky-200;
+  }
+
+  .badge-neutral {
+    @apply badge bg-slate-100 text-slate-600 border border-slate-200;
   }
 }
 
-/* Subtle Engineering Grid background */
-.bg-grid-pattern {
-  background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-/* Clean, restrained Card shadow */
+/* Elevation Shadows (Section 18) */
 .card-shadow {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .subtle-shadow {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.modal-shadow {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
 }
 
 /* Monospace Section Tag */
@@ -159,13 +178,14 @@
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #166534;
+  color: #15803D;
+  font-weight: 600;
 }
 
-/* Custom subtle scrollbar */
+/* Subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -173,10 +193,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #94A3B8;
 }

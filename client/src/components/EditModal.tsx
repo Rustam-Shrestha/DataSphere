@@ -134,14 +134,14 @@ export function EditModal({ recordId, onClose }: Props) {
       }
     >
       {isLoading ? (
-        <div className="py-12 text-center text-sm text-gray-500 font-mono">
+        <div className="py-12 text-center text-sm text-slate-500 font-mono">
           Loading record details from database...
         </div>
       ) : (
         <div className="space-y-6">
           {/* General Station Information */}
           <div>
-            <h4 className="text-xs font-mono uppercase tracking-wider text-emerald-800 font-bold mb-3 flex items-center gap-1.5">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-[#15803D] font-semibold mb-3 flex items-center gap-1.5">
               <Building2 className="size-3.5" />
               <span>Station Identification</span>
             </h4>
@@ -180,8 +180,8 @@ export function EditModal({ recordId, onClose }: Props) {
           </div>
 
           {/* Certificate Expirations */}
-          <div className="pt-2 border-t border-gray-100">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-amber-800 font-bold mb-3 flex items-center gap-1.5">
+          <div className="pt-4 border-t border-slate-200">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-[#D97706] font-semibold mb-3 flex items-center gap-1.5">
               <Calendar className="size-3.5" />
               <span>Compliance Certificates Expiration</span>
             </h4>
@@ -204,9 +204,9 @@ export function EditModal({ recordId, onClose }: Props) {
           </div>
 
           {/* Test Line Items */}
-          <div className="pt-2 border-t border-gray-100">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-gray-800 font-bold mb-3 flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-emerald-700" />
+          <div className="pt-4 border-t border-slate-200">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-slate-800 font-semibold mb-3 flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-[#15803D]" />
               <span>System Compliance Inspection Lines</span>
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
@@ -219,8 +219,8 @@ export function EditModal({ recordId, onClose }: Props) {
                 { name: "Sump", dateKey: "sumpTestDate", statusKey: "sumpTestStatus" },
                 { name: "Stage 1", dateKey: "stage1TestDate", statusKey: "stage1TestStatus" },
               ].map((test) => (
-                <div key={test.name} className="p-3 rounded-lg border border-gray-100 bg-gray-50/50 space-y-2">
-                  <div className="text-xs font-bold text-gray-800">{test.name}</div>
+                <div key={test.name} className="p-3 rounded-md border border-slate-200 bg-slate-50/60 space-y-2">
+                  <div className="text-xs font-semibold text-slate-800">{test.name}</div>
                   <Input
                     label="Inspection Date"
                     type="date"

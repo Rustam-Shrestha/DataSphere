@@ -23,7 +23,6 @@ import {
   XCircle,
   BarChart3,
   Activity,
-  AlertTriangleIcon,
   ShieldCheck,
   CheckCircle2,
 } from "@assets/icons";
@@ -44,7 +43,7 @@ function drawPie(el: HTMLDivElement | null, labels: string[], values: number[]) 
     .attr("transform", `translate(${w / 2},${h / 2})`);
 
   const colorMap: Record<string, string> = {
-    PASS: "#166534",
+    PASS: "#15803D",
     FAIL: "#DC2626",
     PENDING: "#D97706",
   };
@@ -58,7 +57,7 @@ function drawPie(el: HTMLDivElement | null, labels: string[], values: number[]) 
   g.append("path")
     .attr("d", arc)
     .attr("fill", (d) => colorMap[d.data] || fallbackColors(d.data))
-    .attr("stroke", "#ffffff")
+    .attr("stroke", "#FFFFFF")
     .attr("stroke-width", 2)
     .attr("rx", 4);
 }
@@ -68,7 +67,7 @@ function drawBar(el: HTMLDivElement | null, labels: string[], values: number[]) 
   el.innerHTML = "";
   const w = Math.min(520, el.clientWidth - 20 || 460),
     h = 260;
-  const m = { top: 25, right: 20, bottom: 65, left: 45 };
+  const m = { top: 24, right: 20, bottom: 64, left: 44 };
   const iw = w - m.left - m.right,
     ih = h - m.top - m.bottom;
 
@@ -87,21 +86,22 @@ function drawBar(el: HTMLDivElement | null, labels: string[], values: number[]) 
     .append("g")
     .call(d3.axisLeft(y).ticks(5).tickSize(-iw))
     .call((g) => g.select(".domain").remove())
-    .call((g) => g.selectAll(".tick line").attr("stroke", "#f1f5f9"))
-    .call((g) => g.selectAll(".tick text").attr("fill", "#6b7280").attr("font-size", "10px"));
+    .call((g) => g.selectAll(".tick line").attr("stroke", "#E2E8F0"))
+    .call((g) => g.selectAll(".tick text").attr("fill", "#64748B").attr("font-size", "11px").attr("font-family", "Inter"));
 
   svg
     .append("g")
     .attr("transform", `translate(0,${ih})`)
     .call(d3.axisBottom(x))
-    .call((g) => g.select(".domain").attr("stroke", "#e5e7eb"))
+    .call((g) => g.select(".domain").attr("stroke", "#CBD5E1"))
     .selectAll("text")
     .attr("transform", "rotate(-25)")
     .style("text-anchor", "end")
     .attr("dx", "-.5em")
     .attr("dy", ".3em")
-    .attr("fill", "#4b5563")
-    .attr("font-size", "11px");
+    .attr("fill", "#334155")
+    .attr("font-size", "11px")
+    .attr("font-family", "Inter");
 
   svg
     .selectAll("rect")
@@ -112,7 +112,7 @@ function drawBar(el: HTMLDivElement | null, labels: string[], values: number[]) 
     .attr("y", (d) => y(d))
     .attr("width", x.bandwidth())
     .attr("height", (d) => Math.max(0, ih - y(d)))
-    .attr("fill", "#166534")
+    .attr("fill", "#15803D")
     .attr("rx", 4);
 }
 
@@ -183,8 +183,9 @@ export default function Dashboard() {
     {
       key: "storeNumber",
       label: "Store#",
+      isNumeric: true,
       render: (r) => (
-        <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded text-xs">
+        <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">
           #{String(r.storeNumber)}
         </span>
       ),
@@ -193,8 +194,8 @@ export default function Dashboard() {
       key: "city",
       label: "City Location",
       render: (r) => (
-        <span className="font-semibold text-gray-900 flex items-center gap-1.5">
-          <Building2 className="size-3.5 text-gray-400" />
+        <span className="font-medium text-slate-900 flex items-center gap-1.5">
+          <Building2 className="size-3.5 text-slate-400" />
           {String(r.city)}
         </span>
       ),
@@ -220,13 +221,13 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 pb-5">
+    <div className="space-y-6 animate-in fade-in duration-150">
+      {/* Page Header (Section 32) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-5">
         <div>
           <span className="section-tag">OVERVIEW & MONITORING</span>
-          <h1 className="text-2xl font-bold font-heading text-gray-900 mt-1">Compliance Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mt-1">Compliance Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Real-time environmental compliance test metrics, failure distribution, and certificate expirations.
           </p>
         </div>
@@ -237,7 +238,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards (Section 34 & 35) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="Total Records"
@@ -269,7 +270,7 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Overdue Alert banner if any */}
+      {/* Overdue Alert banner if any (Section 38) */}
       {overdue.length > 0 && (
         <Alert
           variant="error"
@@ -280,7 +281,7 @@ export default function Dashboard() {
         </Alert>
       )}
 
-      {/* Visualization Grid */}
+      {/* Visualization Grid (Section 29) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="card-shadow">
           <CardHeader>
@@ -339,11 +340,11 @@ export default function Dashboard() {
                   {soon30.slice(0, 5).map((r, i) => (
                     <div
                       key={i}
-                      className="p-2.5 rounded-lg border border-amber-200/80 bg-amber-50/50 flex items-center justify-between text-xs"
+                      className="p-3 rounded-md border border-amber-200 bg-[#FEF3C7]/40 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-bold text-gray-900">Store #{r.storeNumber}</span>
-                        <span className="text-gray-500 ml-1.5">({r.city})</span>
+                        <span className="font-semibold text-slate-900">Store #{r.storeNumber}</span>
+                        <span className="text-slate-500 ml-1.5">({r.city})</span>
                       </div>
                       <Badge variant="warning" size="sm">Due Soon</Badge>
                     </div>
@@ -354,7 +355,7 @@ export default function Dashboard() {
 
             {overdue.length > 0 && (
               <div className="pt-2">
-                <div className="flex items-center justify-between text-xs font-semibold text-rose-800 uppercase tracking-wider mb-2 font-mono">
+                <div className="flex items-center justify-between text-xs font-semibold text-red-800 uppercase tracking-wider mb-2 font-mono">
                   <span>Overdue / Expired</span>
                   <Badge variant="danger" size="sm">{overdue.length}</Badge>
                 </div>
@@ -362,11 +363,11 @@ export default function Dashboard() {
                   {overdue.slice(0, 5).map((r, i) => (
                     <div
                       key={i}
-                      className="p-2.5 rounded-lg border border-rose-200/80 bg-rose-50/50 flex items-center justify-between text-xs"
+                      className="p-3 rounded-md border border-red-200 bg-[#FEE2E2]/40 flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-bold text-gray-900">Store #{r.storeNumber}</span>
-                        <span className="text-gray-500 ml-1.5">({r.city})</span>
+                        <span className="font-semibold text-slate-900">Store #{r.storeNumber}</span>
+                        <span className="text-slate-500 ml-1.5">({r.city})</span>
                       </div>
                       <Badge variant="danger" size="sm">Lapsed</Badge>
                     </div>
@@ -376,8 +377,8 @@ export default function Dashboard() {
             )}
 
             {soon30.length === 0 && overdue.length === 0 && (
-              <div className="text-center py-8 text-gray-400 text-xs">
-                <CheckCircle2 className="size-8 text-emerald-500 mx-auto mb-2" />
+              <div className="text-center py-8 text-slate-400 text-xs">
+                <CheckCircle2 className="size-8 text-[#15803D] mx-auto mb-2" />
                 All station certificates and environmental filings are up to date.
               </div>
             )}

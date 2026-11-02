@@ -15,24 +15,24 @@ export interface AlertProps {
 
 const variantStyles = {
   info: {
-    container: "bg-blue-50/80 text-blue-900 border-blue-200",
-    icon: <InfoIcon className="size-4 text-blue-600 shrink-0" />,
-    title: "text-blue-900",
+    container: "bg-[#E0F2FE] text-sky-950 border-sky-200",
+    icon: <InfoIcon className="size-4 text-[#0284C7] shrink-0" />,
+    title: "text-sky-950",
   },
   success: {
-    container: "bg-emerald-50/80 text-emerald-900 border-emerald-200",
-    icon: <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />,
-    title: "text-emerald-900",
+    container: "bg-[#DCFCE7] text-emerald-950 border-emerald-200",
+    icon: <CheckCircle2 className="size-4 text-[#15803D] shrink-0" />,
+    title: "text-emerald-950",
   },
   warning: {
-    container: "bg-amber-50/80 text-amber-900 border-amber-200",
-    icon: <AlertTriangleIcon className="size-4 text-amber-600 shrink-0" />,
-    title: "text-amber-900",
+    container: "bg-[#FEF3C7] text-amber-950 border-amber-200",
+    icon: <AlertTriangleIcon className="size-4 text-[#D97706] shrink-0" />,
+    title: "text-amber-950",
   },
   error: {
-    container: "bg-rose-50/80 text-rose-900 border-rose-200",
-    icon: <XCircle className="size-4 text-rose-600 shrink-0" />,
-    title: "text-rose-900",
+    container: "bg-[#FEE2E2] text-red-950 border-red-200",
+    icon: <XCircle className="size-4 text-[#DC2626] shrink-0" />,
+    title: "text-red-950",
   },
 };
 
@@ -50,21 +50,22 @@ export function Alert({
     <div
       role="alert"
       className={cn(
-        "rounded-xl border p-4 flex items-start gap-3 text-sm transition-all shadow-2xs",
+        "rounded-lg border p-4 flex items-start gap-3 text-sm transition-all shadow-subtle",
         styles.container,
         className
       )}
     >
       <div className="mt-0.5">{icon || styles.icon}</div>
       <div className="flex-1">
-        {title && <h4 className={cn("font-semibold font-heading mb-0.5", styles.title)}>{title}</h4>}
-        <div className="text-xs leading-relaxed opacity-90">{children}</div>
+        {title && <h4 className={cn("font-semibold text-sm mb-0.5", styles.title)}>{title}</h4>}
+        <div className="text-xs leading-relaxed opacity-95">{children}</div>
       </div>
       {onClose && (
         <button
           type="button"
           onClick={onClose}
           className="p-1 rounded-md hover:bg-black/5 opacity-70 hover:opacity-100 transition-opacity cursor-pointer shrink-0"
+          aria-label="Close alert"
         >
           <X className="size-4" />
         </button>

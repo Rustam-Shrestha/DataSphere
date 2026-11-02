@@ -12,13 +12,13 @@ const sizeClasses = {
   md: 'max-w-4xl',
   lg: 'max-w-5xl',
   xl: 'max-w-6xl',
-  '2xl': 'max-w-7xl',
+  '2xl': 'max-w-[1440px]',
   full: 'max-w-full',
 }
 
 export const Container: React.FC<ContainerProps> = ({
   children,
-  size = 'xl',
+  size = '2xl',
   className = '',
   ...props
 }) => {

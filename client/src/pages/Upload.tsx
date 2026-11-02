@@ -54,11 +54,11 @@ function LoginForm() {
     <Card className="max-w-md mx-auto card-shadow">
       <CardHeader>
         <CardTitle icon={<UserCircle2 className="size-5" />}>
-          {isRegister ? "Create Compliance Officer Account" : "Officer Login"}
+          {isRegister ? "Create Officer Account" : "Officer Login"}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-slate-500 mb-4">
           Authenticate to import inspection reports, edit test records, or modify certificates.
         </p>
 
@@ -90,12 +90,12 @@ function LoginForm() {
             helperText={isRegister ? "Minimum 8 characters" : undefined}
           />
 
-          <Button type="submit" loading={loading} fullWidth size="lg">
+          <Button type="submit" loading={loading} fullWidth size="md">
             {isRegister ? "Register & Enter" : "Log In to Workspace"}
           </Button>
         </form>
 
-        <div className="pt-4 mt-4 border-t border-gray-100 flex items-center justify-center gap-2 text-xs text-gray-500">
+        <div className="pt-4 mt-4 border-t border-slate-200 flex items-center justify-center gap-2 text-xs text-slate-500">
           <span>{isRegister ? "Already registered?" : "Don't have an officer account?"}</span>
           <Button
             variant="ghost"
@@ -104,7 +104,7 @@ function LoginForm() {
               setIsRegister(!isRegister);
               setError("");
             }}
-            className="text-[#166534] font-semibold hover:bg-emerald-50 px-2 py-1"
+            className="text-[#15803D] font-semibold hover:bg-[#DCFCE7]/60"
           >
             {isRegister ? "Log In Instead" : "Register New Account"}
           </Button>
@@ -180,12 +180,12 @@ function UploadForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="border-2 border-dashed border-gray-300 hover:border-[#166534] rounded-xl p-6 transition-all duration-150 bg-gray-50/50 hover:bg-emerald-50/20 text-center">
-            <CloudUpload className="size-10 text-gray-400 mx-auto mb-2" />
-            <div className="text-sm font-semibold text-gray-700 mb-1">
+          <div className="border-2 border-dashed border-slate-300 hover:border-[#15803D] rounded-lg p-6 transition-all duration-150 bg-slate-50/60 hover:bg-[#DCFCE7]/10 text-center">
+            <CloudUpload className="size-10 text-slate-400 mx-auto mb-2" />
+            <div className="text-sm font-semibold text-slate-800 mb-1">
               {file ? file.name : "Select inspection spreadsheet to import"}
             </div>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-slate-500 mb-4">
               Supported formats: .xlsx, .xls, .csv (Max 15MB)
             </p>
             <input
@@ -203,7 +203,7 @@ function UploadForm() {
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
+                size="md"
                 onClick={() => fileInputRef.current?.click()}
                 leftIcon={<FileSpreadsheet className="size-4" />}
               >
@@ -211,7 +211,7 @@ function UploadForm() {
               </Button>
             </label>
             {file && (
-              <div className="mt-3 text-xs text-emerald-700 font-mono flex items-center justify-center gap-1.5 font-semibold">
+              <div className="mt-3 text-xs text-[#15803D] font-mono flex items-center justify-center gap-1.5 font-medium tabular-nums">
                 <CheckCircle2 className="size-3.5" />
                 <span>Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
               </div>
@@ -262,10 +262,10 @@ export default function Upload() {
       icon: <FileSpreadsheet className="size-3.5" />,
       render: (r) => (
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <div className="p-1.5 rounded-md bg-[#DCFCE7] text-[#15803D] border border-emerald-200">
             <FileSpreadsheet className="size-4" />
           </div>
-          <span className="font-semibold text-gray-900 truncate max-w-xs">{String(r.filename)}</span>
+          <span className="font-semibold text-slate-900 truncate max-w-xs">{String(r.filename)}</span>
         </div>
       ),
     },
@@ -283,6 +283,7 @@ export default function Upload() {
       key: "rowsImported",
       label: "Imported Rows",
       align: "center",
+      isNumeric: true,
       render: (r) => (
         <Badge variant="success" size="sm" icon={<CheckCircle2 className="size-3" />}>
           {String(r.rowsImported)} records
@@ -294,8 +295,8 @@ export default function Upload() {
       label: "Imported Timestamp",
       align: "right",
       render: (r) => (
-        <span className="text-xs text-gray-500 font-mono flex items-center justify-end gap-1">
-          <Clock className="size-3 text-gray-400" />
+        <span className="text-xs text-slate-500 font-mono flex items-center justify-end gap-1 tabular-nums">
+          <Clock className="size-3 text-slate-400" />
           {formatDate(r.importedAt as string)}
         </span>
       ),
@@ -303,12 +304,12 @@ export default function Upload() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-200">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 pb-5">
+    <div className="space-y-6 animate-in fade-in duration-150">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-5">
         <div>
           <span className="section-tag">DATA INGESTION MODULE</span>
-          <h1 className="text-2xl font-bold font-heading text-gray-900 mt-1">Upload Compliance Data</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mt-1">Upload Compliance Data</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Ingest inspection records from Excel (.xlsx, .xls) and CSV sheets into the normalized registry.
           </p>
         </div>
@@ -335,7 +336,7 @@ export default function Upload() {
           data={(data?.items as unknown as Record<string, unknown>[]) ?? []}
           loading={isLoading}
           emptyMessage="No inspection files uploaded yet. Upload your first sheet above."
-          emptyIcon={<FileSpreadsheet className="size-7 text-gray-400" />}
+          emptyIcon={<FileSpreadsheet className="size-7 text-slate-400" />}
         />
       </Card>
     </div>

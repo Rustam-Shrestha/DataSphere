@@ -25,8 +25,9 @@ export default function Data() {
       key: "storeNumber",
       label: "Store#",
       align: "left",
+      isNumeric: true,
       render: (r) => (
-        <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded text-xs">
+        <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs tabular-nums">
           #{String(r.storeNumber)}
         </span>
       ),
@@ -35,8 +36,8 @@ export default function Data() {
       key: "city",
       label: "City",
       render: (r) => (
-        <span className="font-semibold text-gray-900 flex items-center gap-1.5">
-          <Building2 className="size-3.5 text-gray-400" />
+        <span className="font-medium text-slate-900 flex items-center gap-1.5">
+          <Building2 className="size-3.5 text-slate-400" />
           {String(r.city)}
         </span>
       ),
@@ -45,14 +46,15 @@ export default function Data() {
       key: "streetName",
       label: "Street Address",
       className: "max-w-[160px] truncate",
-      render: (r) => <span className="text-gray-600 truncate block">{String(r.streetName)}</span>,
+      render: (r) => <span className="text-slate-600 truncate block text-xs">{String(r.streetName)}</span>,
     },
     {
       key: "facilityId",
       label: "Facility ID",
       align: "center",
+      isNumeric: true,
       render: (r) => (
-        <span className="text-xs font-mono text-gray-500">
+        <span className="text-xs font-mono text-slate-500 tabular-nums">
           {r.facilityId ? String(r.facilityId) : "—"}
         </span>
       ),
@@ -109,7 +111,6 @@ export default function Data() {
           size="sm"
           onClick={() => setEditId(r.id as string)}
           leftIcon={<PencilLine className="size-3.5" />}
-          className="text-xs"
         >
           Edit
         </Button>
@@ -120,13 +121,13 @@ export default function Data() {
   const totalPages = data ? Math.ceil(data.total / data.pageSize) || 1 : 1;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-200 pb-5">
+    <div className="space-y-6 animate-in fade-in duration-150">
+      {/* Header (Section 32) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-5">
         <div>
           <span className="section-tag">COMPLIANCE LEDGER</span>
-          <h1 className="text-2xl font-bold font-heading text-gray-900 mt-1">Compliance Records</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mt-1">Compliance Records</h1>
+          <p className="text-sm text-slate-500 mt-1">
             Query, inspect test statuses across all fuel stations, and update inspection records.
           </p>
         </div>
@@ -137,7 +138,7 @@ export default function Data() {
         )}
       </div>
 
-      {/* Filter Toolbar */}
+      {/* Filter Toolbar (Section 21) */}
       <Card className="p-4 card-shadow">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex-1 max-w-md">
@@ -164,30 +165,30 @@ export default function Data() {
               Clear Filter
             </Button>
           )}
-          <div className="sm:ml-auto flex items-center gap-2 text-xs text-gray-500 font-mono">
-            <TableIcon className="size-4 text-emerald-700" />
+          <div className="sm:ml-auto flex items-center gap-2 text-xs text-slate-500 font-mono">
+            <TableIcon className="size-4 text-[#15803D]" />
             <span>25 records / page</span>
           </div>
         </div>
       </Card>
 
-      {/* Main Table Card */}
+      {/* Main Table Card (Section 27) */}
       <Card className="card-shadow overflow-hidden">
         <Table
           columns={columns}
           data={(data?.items as unknown as Record<string, unknown>[]) ?? []}
           loading={isLoading}
           emptyMessage={search ? `No records matching "${search}"` : "No compliance records available. Upload data first."}
-          emptyIcon={<TableIcon className="size-8 text-gray-300" />}
+          emptyIcon={<TableIcon className="size-8 text-slate-300" />}
         />
       </Card>
 
       {/* Pagination Controls */}
       {data && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-          <span className="text-xs text-gray-500 font-medium">
-            Showing Page <span className="font-bold text-gray-800">{data.page}</span> of{" "}
-            <span className="font-bold text-gray-800">{totalPages}</span> ({data.total} total)
+          <span className="text-xs text-slate-500 font-medium tabular-nums">
+            Showing Page <span className="font-semibold text-slate-900">{data.page}</span> of{" "}
+            <span className="font-semibold text-slate-900">{totalPages}</span> ({data.total} total)
           </span>
 
           <div className="flex items-center gap-2">
@@ -200,7 +201,7 @@ export default function Data() {
             >
               Previous
             </Button>
-            <div className="px-3 py-1 rounded-md text-xs font-mono font-semibold bg-gray-100 text-gray-700">
+            <div className="px-3 py-1 rounded-md text-xs font-mono font-semibold bg-slate-100 text-slate-700 tabular-nums">
               {page} / {totalPages}
             </div>
             <Button

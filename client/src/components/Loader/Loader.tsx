@@ -18,8 +18,8 @@ export const CircularLoader: React.FC<CircularLoaderProps> = ({
   }
 
   const variantClasses = {
-    primary: 'border-[#166534] border-t-transparent',
-    secondary: 'border-[#374151] border-t-transparent',
+    primary: 'border-[#15803D] border-t-transparent',
+    secondary: 'border-slate-700 border-t-transparent',
     white: 'border-white border-t-transparent',
   }
 
@@ -44,7 +44,7 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
       <div
         key={i}
         className={cn(
-          'h-4 bg-[#E5E7EB] rounded-[4px]',
+          'h-4 bg-slate-200 rounded-sm',
           i === lines - 1 ? 'w-2/3' : 'w-full'
         )}
       />
@@ -55,15 +55,15 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div
     className={cn(
-      'rounded-[12px] border border-[#E5E7EB] p-6 bg-white animate-pulse space-y-4',
+      'rounded-lg border border-slate-200 p-6 bg-white animate-pulse space-y-4 shadow-subtle',
       className
     )}
   >
-    <div className="w-full h-44 bg-[#F5F7F6] rounded-[8px]" />
-    <div className="h-6 w-3/4 bg-[#E5E7EB] rounded-[4px]" />
+    <div className="w-full h-44 bg-slate-100 rounded-md" />
+    <div className="h-6 w-3/4 bg-slate-200 rounded-sm" />
     <div className="space-y-2">
-      <div className="h-4 w-full bg-[#E5E7EB] rounded-[4px]" />
-      <div className="h-4 w-5/6 bg-[#E5E7EB] rounded-[4px]" />
+      <div className="h-4 w-full bg-slate-200 rounded-sm" />
+      <div className="h-4 w-5/6 bg-slate-200 rounded-sm" />
     </div>
   </div>
 )
@@ -71,7 +71,7 @@ export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' 
 export const PageLoader: React.FC = () => (
   <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
     <CircularLoader size="lg" />
-    <p className="text-xs font-mono font-medium text-[#6B7280]">LOADING SYSTEM MODULES...</p>
+    <p className="text-xs font-mono font-medium text-slate-500">LOADING SYSTEM MODULES...</p>
   </div>
 )
 

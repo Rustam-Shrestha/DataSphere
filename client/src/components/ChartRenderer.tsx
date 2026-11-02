@@ -3,16 +3,14 @@ import ChartJS from "chart.js/auto";
 import type { ChartData } from "../types";
 
 const COLORS = [
-  "#10b981",
-  "#ef4444",
-  "#3b82f6",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
-  "#6366f1",
-  "#84cc16",
+  "#15803D",
+  "#DC2626",
+  "#0284C7",
+  "#D97706",
+  "#64748B",
+  "#16A34A",
+  "#334155",
+  "#0F172A",
 ];
 
 type ChartConfig = Record<string, unknown>;

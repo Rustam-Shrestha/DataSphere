@@ -9,6 +9,7 @@ export interface Column<T> {
   render?: (row: T, index: number) => ReactNode;
   className?: string;
   align?: "left" | "center" | "right";
+  isNumeric?: boolean;
 }
 
 export interface TableProps<T> {
@@ -34,53 +35,53 @@ export function Table<T extends Record<string, unknown>>({
   striped = false,
   className = "",
 }: TableProps<T>) {
-  const getAlignment = (align?: "left" | "center" | "right") => {
+  const getAlignment = (align?: "left" | "center" | "right", isNumeric?: boolean) => {
+    if (align === "right" || isNumeric) return "text-right justify-end";
     if (align === "center") return "text-center justify-center";
-    if (align === "right") return "text-right justify-end";
     return "text-left justify-start";
   };
 
   return (
-    <div className={cn("overflow-x-auto w-full", className)}>
+    <div className={cn("overflow-x-auto w-full border border-slate-200 rounded-lg bg-white shadow-subtle", className)}>
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50/70 text-gray-600 text-xs uppercase tracking-wider font-semibold">
+          <tr className="border-b border-slate-200 bg-[#F8FAFC] text-slate-700 text-xs font-semibold select-none">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={cn(
-                  "py-3 px-4 font-semibold text-gray-700 whitespace-nowrap",
-                  getAlignment(col.align),
+                  "py-3.5 px-4 font-semibold text-slate-700 whitespace-nowrap",
+                  getAlignment(col.align, col.isNumeric),
                   col.className
                 )}
               >
-                <div className={cn("inline-flex items-center gap-1.5", getAlignment(col.align))}>
-                  {col.icon && <span className="text-gray-400 size-3.5">{col.icon}</span>}
+                <div className={cn("inline-flex items-center gap-1.5", getAlignment(col.align, col.isNumeric))}>
+                  {col.icon && <span className="text-slate-400 size-3.5">{col.icon}</span>}
                   <span>{col.label}</span>
                 </div>
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-slate-200">
           {loading ? (
             Array.from({ length: loadingRows }).map((_, rIdx) => (
-              <tr key={rIdx} className="animate-pulse">
+              <tr key={rIdx} className="animate-pulse h-12">
                 {columns.map((col, cIdx) => (
-                  <td key={cIdx} className="py-3.5 px-4">
-                    <div className="h-4 bg-gray-200/80 rounded w-4/5" />
+                  <td key={cIdx} className="py-3 px-4">
+                    <div className="h-4 bg-slate-200/80 rounded w-4/5" />
                   </td>
                 ))}
               </tr>
             ))
           ) : data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="py-12 text-center text-gray-400">
+              <td colSpan={columns.length} className="py-12 text-center text-slate-400">
                 <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="p-3 bg-gray-50 rounded-full text-gray-300">
-                    {emptyIcon || <TableIcon className="size-6" />}
+                  <div className="p-3 bg-slate-50 rounded-full text-slate-400 border border-slate-200">
+                    {emptyIcon || <TableIcon className="size-5" />}
                   </div>
-                  <span className="text-sm font-medium text-gray-500">{emptyMessage}</span>
+                  <span className="text-sm font-medium text-slate-600">{emptyMessage}</span>
                 </div>
               </td>
             </tr>
@@ -89,9 +90,9 @@ export function Table<T extends Record<string, unknown>>({
               <tr
                 key={(row.id as string) ?? i}
                 className={cn(
-                  "transition-colors duration-150",
-                  striped && i % 2 === 1 ? "bg-gray-50/40" : "bg-white",
-                  onRowClick ? "cursor-pointer hover:bg-emerald-50/40" : "hover:bg-gray-50/70"
+                  "transition-colors duration-150 h-12",
+                  striped && i % 2 === 1 ? "bg-slate-50/40" : "bg-white",
+                  onRowClick ? "cursor-pointer hover:bg-[#DCFCE7]/30" : "hover:bg-slate-50/80"
                 )}
                 onClick={() => onRowClick?.(row)}
               >
@@ -99,8 +100,13 @@ export function Table<T extends Record<string, unknown>>({
                   <td
                     key={col.key}
                     className={cn(
-                      "py-3 px-4 text-gray-700 align-middle",
-                      col.align === "center" ? "text-center" : col.align === "right" ? "text-right" : "text-left",
+                      "py-3 px-4 text-slate-700 align-middle",
+                      col.isNumeric && "tabular-nums",
+                      col.align === "center"
+                        ? "text-center"
+                        : col.align === "right" || col.isNumeric
+                        ? "text-right"
+                        : "text-left",
                       col.className
                     )}
                   >

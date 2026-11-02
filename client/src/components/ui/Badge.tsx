@@ -12,18 +12,18 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-gray-100 text-gray-800 border-gray-200",
-  primary: "bg-[#DCFCE7] text-[#166534] border-emerald-200",
-  success: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
-  warning: "bg-amber-50 text-amber-700 border-amber-200/80",
-  danger: "bg-rose-50 text-rose-700 border-rose-200/80",
-  info: "bg-sky-50 text-sky-700 border-sky-200/80",
-  neutral: "bg-slate-50 text-slate-700 border-slate-200",
+  default: "bg-slate-100 text-slate-700 border-slate-200",
+  primary: "bg-[#DCFCE7] text-[#15803D] border-emerald-200",
+  success: "bg-[#DCFCE7] text-[#16A34A] border-emerald-200",
+  warning: "bg-[#FEF3C7] text-[#D97706] border-amber-200",
+  danger: "bg-[#FEE2E2] text-[#DC2626] border-red-200",
+  info: "bg-[#E0F2FE] text-[#0284C7] border-sky-200",
+  neutral: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
 const sizeStyles: Record<BadgeSize, string> = {
   sm: "px-2 py-0.5 text-[11px] gap-1",
-  md: "px-2.5 py-1 text-xs gap-1.5",
+  md: "px-2.5 py-0.5 text-xs gap-1.5",
 };
 
 export function Badge({
@@ -37,7 +37,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center font-medium rounded-full border tracking-wide select-none",
+        "inline-flex items-center font-medium rounded-full border select-none leading-normal",
         variantStyles[variant],
         sizeStyles[size],
         className

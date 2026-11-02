@@ -17,27 +17,27 @@ export interface StatsCardProps {
 
 const colorStyles = {
   green: {
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-100",
+    bg: "bg-[#DCFCE7]",
+    text: "text-[#15803D]",
+    border: "border-emerald-200",
   },
   blue: {
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-100",
+    bg: "bg-[#E0F2FE]",
+    text: "text-[#0284C7]",
+    border: "border-sky-200",
   },
   amber: {
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-100",
+    bg: "bg-[#FEF3C7]",
+    text: "text-[#D97706]",
+    border: "border-amber-200",
   },
   red: {
-    bg: "bg-rose-50",
-    text: "text-rose-700",
-    border: "border-rose-100",
+    bg: "bg-[#FEE2E2]",
+    text: "text-[#DC2626]",
+    border: "border-red-200",
   },
   slate: {
-    bg: "bg-slate-50",
+    bg: "bg-slate-100",
     text: "text-slate-700",
     border: "border-slate-200",
   },
@@ -57,39 +57,39 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        "bg-white rounded-xl border border-gray-200/80 p-5 shadow-xs transition-all duration-200 hover:border-gray-300 hover:shadow-soft",
+        "bg-white rounded-lg border border-slate-200 p-6 shadow-subtle transition-all duration-150 hover:border-slate-300",
         className
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 font-mono">
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 font-mono">
           {label}
         </div>
         {icon && (
-          <div className={cn("p-2 rounded-lg border flex items-center justify-center shrink-0", styles.bg, styles.text, styles.border)}>
+          <div className={cn("p-2 rounded-md border flex items-center justify-center shrink-0", styles.bg, styles.text, styles.border)}>
             {icon}
           </div>
         )}
       </div>
 
-      <div className="text-2xl font-bold text-gray-900 mt-2 font-heading tracking-tight">
+      <div className="text-2xl font-bold text-slate-900 mt-3 tracking-tight tabular-nums font-sans">
         {value}
       </div>
 
       {(trend || description) && (
-        <div className="mt-2.5 flex items-center gap-2 text-xs">
+        <div className="mt-3 flex items-center gap-2 text-xs">
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center font-semibold px-1.5 py-0.5 rounded",
-                trend.isPositive ? "text-emerald-700 bg-emerald-50" : "text-rose-700 bg-rose-50"
+                "inline-flex items-center font-semibold px-1.5 py-0.5 rounded text-[11px] tabular-nums",
+                trend.isPositive ? "text-[#15803D] bg-[#DCFCE7]" : "text-[#DC2626] bg-[#FEE2E2]"
               )}
             >
               {trend.isPositive ? "↑" : "↓"} {trend.value}
             </span>
           )}
-          {trend?.label && <span className="text-gray-500">{trend.label}</span>}
-          {description && <span className="text-gray-500">{description}</span>}
+          {trend?.label && <span className="text-slate-500">{trend.label}</span>}
+          {description && <span className="text-slate-500">{description}</span>}
         </div>
       )}
     </div>
