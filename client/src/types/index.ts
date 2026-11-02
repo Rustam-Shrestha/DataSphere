@@ -58,6 +58,7 @@ export interface ChartData {
   datasets?: ChartDataset[];
   xLabel?: string;
   yLabel?: string;
+  stacked?: boolean;
 }
 
 export interface ChatResponse {

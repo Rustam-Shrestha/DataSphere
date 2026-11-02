@@ -18,9 +18,15 @@ app = FastAPI(title="Compliance NLU Service")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4000"],
-    allow_methods=["POST"],
-    allow_headers=["Content-Type"],
+    allow_origins=[
+        "http://localhost:4000",
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:4000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -28,9 +34,12 @@ app.add_middleware(
 def query(req: QueryRequest):
     logger.info("Received query: %.120s", req.question)
     result = handle(req.question)
-    logger.info("Intent: %s, rows: %d, chart: %s",
-                result.intent, len(result.rows),
-                result.chart.type if result.chart else "none")
+    logger.info(
+        "Intent: %s, rows: %d, chart: %s",
+        result.intent,
+        len(result.rows),
+        result.chart.type if result.chart else "none",
+    )
     return result
 
 

@@ -11,6 +11,10 @@ interface GeminiResponse {
   }>;
 }
 
+interface CustomError extends Error {
+  code?: string;
+}
+
 export async function askNlu(question: string): Promise<{
   intent: string;
   answer: string;
@@ -18,21 +22,39 @@ export async function askNlu(question: string): Promise<{
   rows: Record<string, unknown>[];
   chart: Record<string, unknown> | null;
 }> {
-  const res = await fetch(`${env.NLU_SERVICE_URL}/nlu/query`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
-  });
-  if (!res.ok) {
-    throw new AppError(502, "NLU_ERROR", `NLU service returned ${res.status}`);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const res = await fetch(`${env.NLU_SERVICE_URL}/nlu/query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      throw new AppError(502, "NLU_ERROR", `NLU service returned status ${res.status}`);
+    }
+    return (await res.json()) as {
+      intent: string;
+      answer: string;
+      sql: string;
+      rows: Record<string, unknown>[];
+      chart: Record<string, unknown> | null;
+    };
+  } catch (err: unknown) {
+    const error = err as CustomError;
+    if (error.name === "AbortError") {
+      throw new AppError(504, "NLU_TIMEOUT", "NLU service timed out (12s). Verify that Python NLU service is running.");
+    }
+    if (error.code === "ECONNREFUSED" || error.message?.includes("fetch failed")) {
+      throw new AppError(503, "NLU_UNAVAILABLE", "Cannot connect to NLU service. Ensure 'python -m app.main' is running on port 8000.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return res.json() as Promise<{
-    intent: string;
-    answer: string;
-    sql: string;
-    rows: Record<string, unknown>[];
-    chart: Record<string, unknown> | null;
-  }>;
 }
 
 export async function askGemini(question: string): Promise<{
@@ -52,9 +74,11 @@ export async function askGemini(question: string): Promise<{
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are a compliance data assistant. Answer the following question about compliance test records.
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are a compliance data assistant. Answer the following question about fuel station compliance test records.
 The database has a ComplianceRecord table with these columns:
 - storeNumber (int), city (string), streetName (string), facilityId (int)
 - channelOfTrade (string)
@@ -64,8 +88,10 @@ The database has a ComplianceRecord table with these columns:
 Question: ${question}
 
 Answer concisely based on what you know about compliance data management. If the user asks about specific records, tell them to use the Data page to browse records. For statistics, guide them to the Dashboard.`,
-          }],
-        }],
+              },
+            ],
+          },
+        ],
       }),
     },
   );
@@ -75,7 +101,7 @@ Answer concisely based on what you know about compliance data management. If the
     throw new AppError(502, "GEMINI_ERROR", `Gemini API error: ${errBody}`);
   }
 
-  const data = await res.json() as GeminiResponse;
+  const data = (await res.json()) as GeminiResponse;
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini.";
   return {
     intent: "gemini",
