@@ -22,3 +22,5 @@ if parsed.query:
 
 DATABASE_URL = _raw_db_url
 PORT = int(os.getenv("PORT", "8000"))
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+CACHE_TTL = int(os.getenv("NLU_CACHE_TTL", "300"))

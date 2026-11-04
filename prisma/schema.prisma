@@ -62,4 +62,13 @@ model ComplianceRecord {
   @@index([city])
   @@index([corrosionTestStatus])
   @@index([spillBucketTestStatus])
+  @@index([overfillProtectionDeviceTestStatus])
+  @@index([lldLineTightnessTestStatus])
+  @@index([atgProbesTestStatus])
+  @@index([sumpTestStatus])
+  @@index([stage1TestStatus])
+  @@index([corrosionTestDate, corrosionTestStatus])
+  @@index([spillBucketsTestDate, spillBucketTestStatus])
+  @@index([deliveryCertificateExpiredDate])
+  @@index([insuranceExpiredDate])
 }

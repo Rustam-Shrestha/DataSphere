@@ -35,6 +35,7 @@ interface Message {
 }
 
 const examples = [
+  "How many failures in Spill Bucket test?",
   "What is the failure rate for Corrosion tests?",
   "Overall failure rate across all tests",
   "Show me a pie chart of pass/fail for Spill Buckets",
@@ -145,7 +146,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      text: "Hello! I am your Compliance Intelligence Assistant. Ask me anything about environmental test records, failure rates, expiring certificates, or request visual charts (pie, bar, line trends, scatter plots, histograms).",
+      text: "Hello! I am your Compliance Intelligence Assistant. Ask me anything about environmental test records, failure rates, pass/fail counts, expiring certificates, or request visual charts when needed.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -207,7 +208,7 @@ export default function Chat() {
 
         <Tabs
           items={[
-            { id: "nlu", label: "Rule-Based NLU", icon: <Gauge className="size-4" /> },
+            { id: "nlu", label: "Smart NLU Engine", icon: <Gauge className="size-4" /> },
             { id: "gemini", label: "Gemini AI", icon: <Sparkles className="size-4" /> },
           ]}
           activeId={mode}
@@ -227,7 +228,7 @@ export default function Chat() {
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-900 tracking-tight">
-                  {mode === "nlu" ? "Parameterized NLU Engine" : "Gemini AI Natural Language"}
+                  {mode === "nlu" ? "Parameterized Smart NLU Engine" : "Gemini AI Natural Language"}
                 </h3>
                 <span className="text-[10px] text-[#15803D] font-mono font-medium flex items-center gap-1.5">
                   <span className="size-1.5 rounded-full bg-[#15803D] animate-pulse" />
@@ -259,6 +260,15 @@ export default function Chat() {
                       : "bg-white text-slate-900 rounded-tl-xs border border-slate-200"
                   }`}
                 >
+                  {/* Intent Badge for Transparency */}
+                  {m.intent && m.role === "bot" && m.intent !== "gemini" && (
+                    <div className="mb-1.5">
+                      <span className="inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider rounded bg-slate-100 text-slate-600 border border-slate-200">
+                        {m.intent.replace("_", " ")}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Bot or User Text */}
                   {m.role === "user" ? (
                     <p className="whitespace-pre-wrap">{m.text}</p>
@@ -318,7 +328,7 @@ export default function Chat() {
                 </div>
                 <div className="bg-white rounded-lg rounded-tl-xs px-4 py-2.5 text-xs text-slate-600 border border-slate-200 shadow-subtle flex items-center gap-2">
                   <span className="w-3.5 h-3.5 border-2 border-[#15803D] border-t-transparent rounded-full animate-spin" />
-                  Analyzing query, generating PostgreSQL statement & computing statistics...
+                  Processing question, executing query & preparing answer...
                 </div>
               </div>
             )}
@@ -331,7 +341,7 @@ export default function Chat() {
               <Input
                 placeholder={
                   mode === "nlu"
-                    ? "Ask question (e.g. 'Failure rate for ATG tests', 'Histogram of store failures', 'Records in Dallas')..."
+                    ? "Ask a question (e.g. 'How many failures in spill bucket test?', 'Pie chart of corrosion', 'Records in Dallas')..."
                     : "Ask Gemini about compliance rules or records..."
                 }
                 value={input}

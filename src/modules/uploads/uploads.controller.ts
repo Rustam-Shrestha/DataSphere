@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { importFile, listUploads, getUploadRows } from "./uploads.service.js";
 import { ok } from "../../utils/response.js";
+import { env } from "../../config/env.js";
 
 export async function uploadFile(req: Request, res: Response, next: NextFunction) {
   try {
@@ -9,6 +10,14 @@ export async function uploadFile(req: Request, res: Response, next: NextFunction
       return;
     }
     const result = await importFile(req.file.path, req.file.originalname);
+
+    // Invalidate Python NLU cache asynchronously
+    try {
+      fetch(`${env.NLU_SERVICE_URL}/nlu/cache/invalidate`, { method: "POST" }).catch(() => {});
+    } catch {
+      // Ignore background invalidation error
+    }
+
     res.status(201).json(ok(result));
   } catch (err) {
     next(err);

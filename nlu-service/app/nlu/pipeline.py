@@ -1,6 +1,6 @@
 """
 Pipeline: orchestrates intent classification, entity extraction, SQL generation,
-query execution, chart building, and answer summarization.
+query execution, response format decision, chart building, and answer summarization.
 """
 
 import logging
@@ -23,18 +23,19 @@ PALETTE = [
 # Chart builders
 # ---------------------------------------------------------------------------
 
+def _get_status_color(label: str, fallback_idx: int) -> str:
+    l_upper = str(label).upper().strip()
+    if "PASS" in l_upper:
+        return "#22c55e"
+    if "FAIL" in l_upper:
+        return "#ef4444"
+    if "PENDING" in l_upper:
+        return "#f59e0b"
+    return PALETTE[fallback_idx % len(PALETTE)]
+
+
 def _build_pie_chart(title: str, labels: List[str], values: List[int], chart_type: str = "pie") -> Chart:
-    colors = []
-    for label in labels:
-        l_upper = str(label).upper()
-        if "PASS" in l_upper:
-            colors.append("#22c55e")
-        elif "FAIL" in l_upper:
-            colors.append("#ef4444")
-        elif "PENDING" in l_upper:
-            colors.append("#f59e0b")
-        else:
-            colors.append(PALETTE[len(colors) % len(PALETTE)])
+    colors = [_get_status_color(labels[i], i) for i in range(len(labels))]
 
     return Chart(
         type=chart_type if chart_type in ("pie", "doughnut", "polarArea") else "pie",
@@ -46,17 +47,7 @@ def _build_pie_chart(title: str, labels: List[str], values: List[int], chart_typ
 
 
 def _build_bar_chart(title: str, labels: List[str], dataset_label: str, data: List[int], chart_type: str = "bar") -> Chart:
-    colors = []
-    for label in labels:
-        l_upper = str(label).upper()
-        if "PASS" in l_upper:
-            colors.append("#22c55e")
-        elif "FAIL" in l_upper:
-            colors.append("#ef4444")
-        elif "PENDING" in l_upper:
-            colors.append("#f59e0b")
-        else:
-            colors.append(PALETTE[len(colors) % len(PALETTE)])
+    colors = [_get_status_color(labels[i], i) for i in range(len(labels))]
 
     return Chart(
         type="bar",
@@ -163,14 +154,12 @@ def _build_chart(
 
     # 2. Scatter queries with 'test_a' and 'test_b'
     if "test_a" in row0 and "test_b" in row0:
-        # Map categorical status to numbers: PASS: 2, PENDING: 1, FAIL: 0 with minor jitter
         score_map = {"PASS": 2.0, "PENDING": 1.0, "FAIL": 0.0}
         points = []
         import random
         for r in rows:
             base_x = score_map.get(str(r.get("test_a", "")).upper(), 1.0)
             base_y = score_map.get(str(r.get("test_b", "")).upper(), 1.0)
-            # Add slight jitter for visual distinction on discrete grid
             jitter_x = round(base_x + random.uniform(-0.08, 0.08), 2)
             jitter_y = round(base_y + random.uniform(-0.08, 0.08), 2)
             points.append({"x": jitter_x, "y": jitter_y})
@@ -192,7 +181,6 @@ def _build_chart(
         title = "Compliance Test Results (Pass vs Fail)"
 
         if chart_type in ("pie", "doughnut", "polarArea"):
-            # Sum total tests per category
             totals = [p + f for p, f in zip(pass_vals, fail_vals)]
             return _build_pie_chart("Test Distribution by Type", labels, totals, chart_type)
         if chart_type == "radar":
@@ -255,6 +243,7 @@ def handle(question: str) -> QueryResponse:
 def _handle(question: str) -> QueryResponse:
     q_norm = intents.normalize(question)
     intent = intents.classify(question)
+    user_wants_visual = intents.wants_chart(question)
     chart_type = intents.extract_chart_type(question)
     test_type = intents.extract_test_type(question)
     status_filter = intents.extract_status(question)
@@ -266,28 +255,27 @@ def _handle(question: str) -> QueryResponse:
     has_compare = bool(re.search(r"\b(compare|comparison|versus|vs\.?|vs )\b", q_norm))
     is_summary = (intent == "SUMMARY") or bool(re.search(r"\b(summary|overview|all tests|every test)\b", q_norm))
 
-    # Look up known cities from the database
     known_cities = list_distinct_cities()
     city = entities.extract_city(question, known_cities)
 
     test_a, test_b = intents.extract_two_test_types(question)
 
     if intent == "UNRECOGNIZED":
-        # Best-effort: if any test type signal exists, attempt a summary
         if test_type:
             sql, params = templates.failure_rate_sql(test_type, city, store_number)
             with get_connection() as conn:
                 with conn.cursor() as cur:
                     cur.execute(sql, params)
                     rows = [dict(r) for r in cur.fetchall()]
-            chart = _build_chart(intent="FAILURE_RATE", rows=rows, chart_type=chart_type, test_type=test_type)
+
+            chart = _build_chart(intent="FAILURE_RATE", rows=rows, chart_type=chart_type, test_type=test_type) if user_wants_visual else None
             answer = summarizer.build_text_answer(
                 intent="FAILURE_RATE", rows=rows, test_type=test_type,
                 city=city, store_number=store_number, status_filter=status_filter, chart_type=chart_type,
+                has_chart=(chart is not None),
             )
             return QueryResponse(intent="failure_rate", answer=answer, sql=sql, rows=rows[:50], chart=chart)
 
-        # No clear signal at all — short, polite one-liner
         return QueryResponse(
             intent="unrecognized",
             answer=(
@@ -347,14 +335,24 @@ def _handle(question: str) -> QueryResponse:
             cur.execute(sql, params)
             rows = [dict(r) for r in cur.fetchall()]
 
-    # Build Chart
-    chart = _build_chart(
-        intent=intent,
-        rows=rows,
-        chart_type=chart_type,
-        test_type=test_type or test_a,
-        second_test=test_b,
+    # Response Format Decision Layer:
+    # Scalar/list queries (STATUS_COUNTS, FAILURE_RATE, EXPIRING_SOON, OVERDUE, LIST_RECORDS)
+    # produce NO chart unless the user specifically and explicitly requested a visual/chart.
+    should_build_chart = (
+        intent == "CHART_DATA"
+        or (intent == "SUMMARY" and user_wants_visual)
+        or user_wants_visual
     )
+
+    chart = None
+    if should_build_chart:
+        chart = _build_chart(
+            intent=intent,
+            rows=rows,
+            chart_type=chart_type,
+            test_type=test_type or test_a,
+            second_test=test_b,
+        )
 
     # Build Text Answer
     answer = summarizer.build_text_answer(
@@ -365,12 +363,13 @@ def _handle(question: str) -> QueryResponse:
         store_number=store_number,
         status_filter=status_filter,
         chart_type=chart_type,
+        has_chart=(chart is not None),
     )
 
     return QueryResponse(
         intent=intent.lower(),
         answer=answer,
         sql=sql,
-        rows=rows[:50],  # Return up to 50 rows for inline table inspection
+        rows=rows[:50],
         chart=chart,
     )

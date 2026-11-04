@@ -86,6 +86,14 @@ TYPO_MAP = {
     "stag1": "stage 1",
     "stage1": "stage 1",
     "stge": "stage",
+    # Chart typos
+    "pi chart": "pie chart",
+    "py chart": "pie chart",
+    "barchart": "bar chart",
+    "linee": "line",
+    "linegraph": "line graph",
+    "piechart": "pie chart",
+    "histrogram": "histogram",
     # Intent synonym expansions — failure-related
     "broken": "fail",
     "not passing": "fail",
@@ -159,6 +167,16 @@ def normalize(question: str) -> str:
     return q
 
 
+def wants_chart(question: str) -> bool:
+    """Returns True only when the user explicitly requests visual/chart output."""
+    q = normalize(question)
+    return bool(re.search(
+        r"\b(chart|graph|plot|visuali[sz]e|visuali[sz]ation|draw|render|histogram|histo|"
+        r"pie|doughnut|donut|bar|line|scatter|radar|polar|trend|over time|timeline)\b",
+        q,
+    ))
+
+
 def classify(question: str) -> str:
     """
     Classify the user question into an intent category using multi-signal scoring.
@@ -177,78 +195,93 @@ def classify(question: str) -> str:
 
     # --- 1. OVERDUE (highest priority keyword check) ---
     if re.search(r"\b(overdue|past due|lapsed|lapse|already expired)\b", q):
-        scores["OVERDUE"] += 10
+        scores["OVERDUE"] += 12
 
     # --- 2. EXPIRING_SOON ---
     if re.search(r"\b(expir(ing|es|ation|y)|expire soon|ending soon|about to expire|due soon|near expiry|close to expiring|running out)\b", q):
-        scores["EXPIRING_SOON"] += 8
+        scores["EXPIRING_SOON"] += 10
     if re.search(r"\b(certificate|insurance)\b", q) and re.search(r"\b(expir|due|valid)\b", q):
-        scores["EXPIRING_SOON"] += 4
+        scores["EXPIRING_SOON"] += 5
 
     # --- 3. SUMMARY / OVERVIEW ---
     if re.search(r"\b(summary|overview|dashboard|all tests|every test|status of all|overall status|full report|complete report)\b", q):
-        scores["SUMMARY"] += 8
+        scores["SUMMARY"] += 10
     if re.search(r"\b(analyze|breakdown|break down|audit)\b", q) and not re.search(r"\b(fail|pass)\b", q):
-        scores["SUMMARY"] += 4
+        scores["SUMMARY"] += 5
 
     # --- 4. LIST / SHOW RECORDS ---
     if re.search(r"\b(list|show|get|fetch|display|find|give me|tell me|pull up|bring up)\b.*\b(record|records|data|rows?|entries|entry|stores?|facility|facilities)\b", q):
-        scores["LIST_RECORDS"] += 7
+        scores["LIST_RECORDS"] += 8
     if re.search(r"\b(all records|store records|records for store|compliance records)\b", q):
-        scores["LIST_RECORDS"] += 6
+        scores["LIST_RECORDS"] += 7
     if re.search(r"\b(where is store|details for store)\b", q):
+        scores["LIST_RECORDS"] += 6
+    if re.search(r"\b(?:store|station|facility|location|no\.?|number)\s*#?\s*\d+\b", q) and not re.search(r"\b(rate|percent|count|how many)\b", q):
         scores["LIST_RECORDS"] += 5
-    # Store number alone strongly suggests list
-    if re.search(r"\b(?:store|station|facility|location|no\.?|number)\s*#?\s*\d+\b", q):
-        scores["LIST_RECORDS"] += 4
 
     # --- 5. CHART / VISUALIZATION ---
+    # Give high score only if user explicitly asks to plot/graph/visualize
     if re.search(r"\b(chart|graph|plot|visualize|draw|render|histogram|histo|visual|visualisation|visualization)\b", q):
-        scores["CHART_DATA"] += 6
-    if re.search(r"\b(pie|doughnut|donut|bar|line|scatter|radar|polar)\b", q):
-        scores["CHART_DATA"] += 4
+        scores["CHART_DATA"] += 8
+    if re.search(r"\b(pie chart|doughnut chart|donut chart|bar chart|bar graph|line chart|line graph|scatter plot|radar chart|polar chart)\b", q):
+        scores["CHART_DATA"] += 8
+    elif re.search(r"\b(pie|doughnut|donut|bar|line|scatter|radar|polar)\b", q) and not re.search(r"\b(how many|count|rate|percent)\b", q):
+        scores["CHART_DATA"] += 5
     if re.search(r"\b(trend|over time|timeline|monthly|weekly|by month|by year|time series)\b", q):
-        scores["CHART_DATA"] += 6
+        scores["CHART_DATA"] += 7
 
     # --- 6. COMPARISON / RATIO ---
     if re.search(r"\b(compare|comparison|versus|vs\.?|vs )\b", q):
-        scores["CHART_DATA"] += 5
-    if re.search(r"\b(ratio|proportion|fail to pass|pass to fail)\b", q):
+        scores["CHART_DATA"] += 6
+    if re.search(r"\b(ratio|proportion|fail to pass|pass to fail)\b", q) and not re.search(r"\bhow many\b", q):
         scores["CHART_DATA"] += 4
 
-    # --- 7. FAILURE RATE ---
-    if re.search(r"\b(failure rate|fail rate|rate of failure|percentage.*fail|fail.*%|failing rate|how much failure)\b", q):
-        scores["FAILURE_RATE"] += 8
+    # --- 7. FAILURE RATE (Must have rate/percent words OR pass rate/fail rate) ---
+    is_explicit_rate = bool(re.search(r"\b(failure rate|fail rate|rate of failure|percentage.*fail|fail.*%|failing rate|pass rate|rate of pass|success rate)\b", q))
+    if is_explicit_rate:
+        scores["FAILURE_RATE"] += 12
     if re.search(r"\b(overall failure|overall rate)\b", q):
+        scores["FAILURE_RATE"] += 10
+    if re.search(r"\b(pass rate|fail rate)\b", q) and re.search(r"\ball\b", q):
+        scores["FAILURE_RATE"] += 10
+    if re.search(r"\bfail(ure|ed|ing|s|ures)?\b", q) and re.search(r"\b(rate|percent|percentage|portion)\b", q):
         scores["FAILURE_RATE"] += 8
-    if re.search(r"\b(how many.*fail|number of.*fail|total.*fail)\b", q):
-        scores["STATUS_COUNTS"] += 6
-        scores["FAILURE_RATE"] += 3
-    elif re.search(r"\bfail(ure|ed|ing|s|ures)?\b", q) and re.search(r"\b(rate|percent|percentage|portion)\b", q):
-        scores["FAILURE_RATE"] += 6
-    # "how many broken" / "how many not passing" → failure/counts
-    if re.search(r"\b(broken|not passing|not working)\b", q):
-        scores["FAILURE_RATE"] += 3
 
-    # --- 8. STATUS COUNTS ---
-    if re.search(r"\b(how many|count|number of|total number|stats for)\b.*\b(pass(es|ed|ing)?|fail(s|ed|ing|ure|ures)?|pending|tests?|inspections?)\b", q):
-        scores["STATUS_COUNTS"] += 7
+    # --- 8. STATUS COUNTS (Targeted count/how many questions) ---
+    is_count_query = bool(re.search(r"\b(how many|count|number of|total number|stats for)\b", q))
+    if is_count_query and re.search(r"\b(fail(s|ed|ing|ure|ures)?|pass(es|ed|ing)?|pending|other|neither|exempt|n/?a)\b", q):
+        scores["STATUS_COUNTS"] += 12
+    elif is_count_query:
+        scores["STATUS_COUNTS"] += 8
+
     if re.search(r"\b(pass|fail|pending)\b.*\b(count|how many|total|number)\b", q):
-        scores["STATUS_COUNTS"] += 7
+        scores["STATUS_COUNTS"] += 9
     if re.search(r"\b(pass count|fail count|pending count|status count|status breakdown)\b", q):
-        scores["STATUS_COUNTS"] += 6
-    if re.search(r"\bhow many tests\b", q):
-        scores["STATUS_COUNTS"] += 5
+        scores["STATUS_COUNTS"] += 8
+    if re.search(r"\bneither pass nor fail\b", q) or re.search(r"\bno pass or fail\b", q) or re.search(r"\bnot pass and not fail\b", q):
+        scores["STATUS_COUNTS"] += 12
 
     if not scores:
         return "UNRECOGNIZED"
+
+    # Tie-breaking rules:
+    # 1. If "how many" or "count" was asked and there is NO explicit "rate" or "%", STATUS_COUNTS must win over FAILURE_RATE
+    if is_count_query and not is_explicit_rate:
+        if "STATUS_COUNTS" in scores and "FAILURE_RATE" in scores:
+            scores["STATUS_COUNTS"] = max(scores["STATUS_COUNTS"], scores["FAILURE_RATE"] + 2)
+
+    # 2. If chart was requested alongside scalar question ("how many failures as bar chart"),
+    # we treat it as STATUS_COUNTS but wants_chart() will flag that a chart should be attached.
+    if is_count_query and "CHART_DATA" in scores:
+        if scores["STATUS_COUNTS"] >= scores["CHART_DATA"] - 2:
+            scores["STATUS_COUNTS"] = scores["CHART_DATA"] + 1
 
     top_intent, top_score = scores.most_common(1)[0]
     return top_intent if top_score > 0 else "UNRECOGNIZED"
 
 
 def extract_chart_type(question: str) -> str:
-    """Extract requested chart type, prioritizing longest keyword match."""
+    """Extract requested chart type, prioritizing longest keyword match with fuzzy fallback."""
     q = normalize(question)
     matches = []
     for keyword, chart_type in CHART_TYPES.items():
@@ -259,7 +292,16 @@ def extract_chart_type(question: str) -> str:
         matches.sort(key=lambda x: -x[0])
         return matches[0][1]
 
-    # Defaults based on intent context if not explicitly mentioned
+    # Fuzzy check for typos like 'pi chart', 'linee', 'barr'
+    words = q.split()
+    for w in words:
+        if len(w) >= 3:
+            for kw, ctype in CHART_TYPES.items():
+                kw_head = kw.split()[0]
+                if fuzz.ratio(w, kw_head) >= 80:
+                    return ctype
+
+    # Contextual defaults if not explicitly named
     if re.search(r"\b(trend|over time|timeline|monthly)\b", q):
         return "line"
     if re.search(r"\b(scatter|correlation|vs|versus)\b", q):
@@ -283,8 +325,7 @@ def extract_test_type(question: str) -> Optional[str]:
         if t.lower() in q:
             return t
 
-    # Fuzzy fallback: slide a window of 1-3 tokens over the question and
-    # check against all known aliases using token_set_ratio
+    # Fuzzy fallback: slide a window of 1-3 tokens over the question
     words = q.split()
     for window in range(3, 0, -1):
         for i in range(len(words) - window + 1):
@@ -335,8 +376,10 @@ def extract_two_test_types(question: str) -> Tuple[Optional[str], Optional[str]]
 
 
 def extract_status(question: str) -> Optional[str]:
-    """Extract PASS, FAIL, or PENDING."""
+    """Extract PASS, FAIL, PENDING, or OTHER/NEITHER."""
     q = normalize(question)
+    if re.search(r"\b(neither pass nor fail|no pass or fail|other|neither)\b", q):
+        return "OTHER"
     for s in STATUS_VALUES:
         pattern = r"\b" + s.lower() + r"(ed|ing|es)?\b"
         if re.search(pattern, q):

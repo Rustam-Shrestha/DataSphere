@@ -83,7 +83,7 @@ def failure_rate_sql(
         f"SELECT {col} AS status, count(*)::int AS cnt "
         f'FROM "ComplianceRecord"'
         f"{where} "
-        f"GROUP BY status "
+        f"GROUP BY {col} "
         f"ORDER BY cnt DESC"
     )
     return sql, tuple(params)
@@ -93,7 +93,7 @@ def overall_failure_rate_sql(
     city: Optional[str] = None,
     store_number: Optional[int] = None,
 ) -> Tuple[str, tuple]:
-    """Aggregate PASS, FAIL, PENDING counts across all 7 test types."""
+    """Aggregate all status counts across all 7 test types."""
     unions = []
     params = []
 
@@ -120,7 +120,7 @@ def summary_sql(
     city: Optional[str] = None,
     store_number: Optional[int] = None,
 ) -> Tuple[str, tuple]:
-    """Comprehensive summary of pass/fail/pending counts for every test category."""
+    """Comprehensive summary of pass/fail/pending/other counts for every test category."""
     select_parts = []
     params = []
 
@@ -132,7 +132,8 @@ def summary_sql(
             f"count(*) FILTER (WHERE {status_col} IS NOT NULL)::int AS total, "
             f"count(*) FILTER (WHERE {status_col} = 'PASS')::int AS pass_count, "
             f"count(*) FILTER (WHERE {status_col} = 'FAIL')::int AS fail_count, "
-            f"count(*) FILTER (WHERE {status_col} NOT IN ('PASS', 'FAIL') AND {status_col} IS NOT NULL)::int AS pending_count "
+            f"count(*) FILTER (WHERE {status_col} = 'PENDING')::int AS pending_count, "
+            f"count(*) FILTER (WHERE {status_col} NOT IN ('PASS', 'FAIL', 'PENDING') AND {status_col} IS NOT NULL)::int AS other_count "
             f'FROM "ComplianceRecord"{where}'
         )
         params.extend(p)
@@ -148,21 +149,25 @@ def status_counts_sql(
     store_number: Optional[int] = None,
 ) -> Tuple[str, tuple]:
     """Get counts grouped by status for a test type (or all tests)."""
+    base_clauses, base_params = _build_filter_clauses(city, store_number)
+
     if not test_type:
-        base_clauses, base_params = _build_filter_clauses(city, store_number)
         if status_filter:
-            # Aggregate this specific status across all 7 test columns.
-            # Each UNION leg gets its own independent copy of params — no shared mutation.
+            sf_upper = status_filter.upper()
             unions = []
             all_params: List = []
             for _, status_col, _ in ALL_TEST_COLUMNS:
-                leg_clauses = list(base_clauses) + [f"{status_col} = %s"]
-                leg_params = list(base_params) + [status_filter.upper()]
+                if sf_upper == "OTHER":
+                    leg_clauses = list(base_clauses) + [f"{status_col} NOT IN ('PASS', 'FAIL') AND {status_col} IS NOT NULL"]
+                    leg_params = list(base_params)
+                else:
+                    leg_clauses = list(base_clauses) + [f"{status_col} = %s"]
+                    leg_params = list(base_params) + [sf_upper]
                 where = " WHERE " + " AND ".join(leg_clauses)
                 unions.append(f'SELECT count(*)::int AS cnt FROM "ComplianceRecord"{where}')
                 all_params.extend(leg_params)
             sql = (
-                f"SELECT '{status_filter.upper()}' AS status, sum(cnt)::int AS cnt FROM ("
+                f"SELECT '{sf_upper}' AS status, sum(cnt)::int AS cnt FROM ("
                 + " UNION ALL ".join(unions)
                 + ") sub"
             )
@@ -170,11 +175,16 @@ def status_counts_sql(
         return overall_failure_rate_sql(city, store_number)
 
     col = TEST_STATUS_COLUMNS.get(test_type, '"corrosionTestStatus"')
-    clauses, params = _build_filter_clauses(city, store_number)
+    clauses = list(base_clauses)
+    params = list(base_params)
     clauses.append(f"{col} IS NOT NULL")
     if status_filter:
-        clauses.append(f"{col} = %s")
-        params.append(status_filter.upper())
+        sf_upper = status_filter.upper()
+        if sf_upper == "OTHER":
+            clauses.append(f"{col} NOT IN ('PASS', 'FAIL')")
+        else:
+            clauses.append(f"{col} = %s")
+            params.append(sf_upper)
 
     where = " WHERE " + " AND ".join(clauses)
     sql = (
@@ -281,7 +291,6 @@ def trend_sql(
         )
         return sql, tuple(params)
     else:
-        # Aggregate all tests grouped by month
         unions = []
         params = []
         for _, status_col, date_col in ALL_TEST_COLUMNS:
@@ -384,7 +393,6 @@ def histogram_sql(
         )
         return sql, tuple(params)
 
-    # Count how many total failed tests each store has (0 failures, 1 failure, 2 failures, ...)
     fail_exprs = " + ".join(
         f"CASE WHEN {sc} = 'FAIL' THEN 1 ELSE 0 END"
         for _, sc, _ in ALL_TEST_COLUMNS
