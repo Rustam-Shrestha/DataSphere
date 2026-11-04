@@ -219,7 +219,22 @@ def list_records_sql(
     return sql, tuple(params)
 
 
-def expiring_soon_sql(days: int = 30) -> Tuple[str, tuple]:
+def expiring_soon_sql(days: int = 30, detailed: bool = False, limit: int = 50) -> Tuple[str, tuple]:
+    if detailed:
+        sql = (
+            'SELECT "storeNumber", "city", "streetName", '
+            'CASE '
+            '  WHEN "deliveryCertificateExpiredDate" BETWEEN CURRENT_DATE AND CURRENT_DATE + %s::int THEN \'Delivery Certificate\' '
+            '  ELSE \'Insurance\' '
+            'END AS "itemType", '
+            'COALESCE("deliveryCertificateExpiredDate", "insuranceExpiredDate") AS "expiredDate" '
+            'FROM "ComplianceRecord" '
+            'WHERE "deliveryCertificateExpiredDate" BETWEEN CURRENT_DATE AND CURRENT_DATE + %s::int '
+            '   OR "insuranceExpiredDate" BETWEEN CURRENT_DATE AND CURRENT_DATE + %s::int '
+            'ORDER BY "expiredDate" ASC LIMIT %s'
+        )
+        return sql, (days, days, days, limit)
+
     sql = (
         "SELECT 'Delivery Certificate' AS type, count(*)::int AS cnt "
         'FROM "ComplianceRecord" '
@@ -232,7 +247,22 @@ def expiring_soon_sql(days: int = 30) -> Tuple[str, tuple]:
     return sql, (days, days)
 
 
-def overdue_sql() -> Tuple[str, tuple]:
+def overdue_sql(detailed: bool = False, limit: int = 50) -> Tuple[str, tuple]:
+    if detailed:
+        sql = (
+            'SELECT "storeNumber", "city", "streetName", '
+            'CASE '
+            '  WHEN "deliveryCertificateExpiredDate" < CURRENT_DATE THEN \'Delivery Certificate\' '
+            '  ELSE \'Insurance\' '
+            'END AS "itemType", '
+            'COALESCE("deliveryCertificateExpiredDate", "insuranceExpiredDate") AS "expiredDate" '
+            'FROM "ComplianceRecord" '
+            'WHERE "deliveryCertificateExpiredDate" < CURRENT_DATE '
+            '   OR "insuranceExpiredDate" < CURRENT_DATE '
+            'ORDER BY "expiredDate" ASC LIMIT %s'
+        )
+        return sql, (limit,)
+
     sql = (
         "SELECT 'Delivery Certificate' AS type, count(*)::int AS cnt, "
         'MIN("deliveryCertificateExpiredDate")::text AS earliest '

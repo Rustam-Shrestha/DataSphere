@@ -21,6 +21,7 @@ def build_text_answer(
     status_filter: Optional[str] = None,
     chart_type: Optional[str] = None,
     has_chart: bool = False,
+    is_listing: bool = False,
 ) -> str:
     """Build a natural, accurate answer describing the SQL query output."""
     loc = f" in **{city}**" if city else ""
@@ -48,7 +49,6 @@ def build_text_answer(
 
         target = test_type or "all compliance tests"
 
-        # Concise scalar answer
         res = (
             f"The failure rate for **{target}**{loc}{store} is **{fail_pct}%** "
             f"({fail_count} failed out of {evaluated} evaluated tests). "
@@ -73,7 +73,6 @@ def build_text_answer(
 
         target = test_type or "all compliance tests"
 
-        # If a specific status was requested (e.g. "how many failures")
         if status_filter:
             sf_upper = status_filter.upper()
             if sf_upper == "OTHER":
@@ -88,7 +87,6 @@ def build_text_answer(
                 return f"There are **{other_count}** test record(s) with neither PASS nor FAIL for **{target}**{loc}{store} ({breakdown})."
 
             matched_cnt = _get_status_count(rows, sf_upper)
-            # If the query itself was an aggregated UNION leg returning single row
             if len(rows) == 1 and "cnt" in rows[0] and str(rows[0].get("status", "")).upper() == sf_upper:
                 matched_cnt = int(rows[0]["cnt"])
 
@@ -96,7 +94,6 @@ def build_text_answer(
             ratio_note = f" (out of {total_all} total recorded)" if total_all > matched_cnt else ""
             return f"There are **{matched_cnt}** {sf_upper} result(s) for **{target}**{loc}{store}{ratio_note}."
 
-        # No specific status filter -> full breakdown
         total = sum(int(r.get("cnt", 0)) for r in rows)
         breakdown = ", ".join(f"**{r.get('status', 'Unknown')}**: {r.get('cnt', 0)}" for r in rows)
         return f"Status counts for **{target}**{loc}{store}: {breakdown} (Total: **{total}**)."
@@ -157,6 +154,8 @@ def build_text_answer(
     if intent == "EXPIRING_SOON":
         if not rows:
             return "No certificates or insurance policies are expiring in the specified timeframe."
+        if is_listing:
+            return f"Found **{len(rows)}** expiring item(s). Tabulated details are displayed below:"
         total = sum(int(r.get("cnt", 0)) for r in rows)
         parts = [f"**{r.get('type')}**: {r.get('cnt')}" for r in rows]
         return f"Found **{total}** certificate(s) / policy(ies) expiring soon:\n• " + "\n• ".join(parts)
@@ -164,6 +163,8 @@ def build_text_answer(
     if intent == "OVERDUE":
         if not rows:
             return "Great news! No certificates or insurance policies are currently overdue."
+        if is_listing:
+            return f"⚠️ Warning: Found **{len(rows)}** overdue item(s) requiring immediate renewal. Detailed records are listed below:"
         total = sum(int(r.get("cnt", 0)) for r in rows)
         parts = []
         for r in rows:

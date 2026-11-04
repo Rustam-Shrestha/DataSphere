@@ -35,18 +35,16 @@ interface Message {
 }
 
 const examples = [
+  "List the overdue items",
   "How many failures in Spill Bucket test?",
   "What is the failure rate for Corrosion tests?",
+  "Show expiring certificates in 60 days",
   "Overall failure rate across all tests",
   "Show me a pie chart of pass/fail for Spill Buckets",
   "Plot a line chart of test trends over time",
   "Draw a bar chart of all test results",
   "Compare corrosion vs spill buckets",
-  "Scatter plot ATG vs Stage 1",
-  "Histogram of store failures",
   "Show me records for store #38",
-  "What certificates are expiring in 60 days?",
-  "What items are overdue?",
   "Summary of all compliance tests",
 ];
 
@@ -83,54 +81,140 @@ function renderBotText(text: string) {
   );
 }
 
-function InlineRecordTable({ rows }: { rows: Record<string, unknown>[] }) {
+function InlineGenericTable({ rows, title = "Matching Records" }: { rows: Record<string, unknown>[]; title?: string }) {
   if (!rows || rows.length === 0) return null;
 
-  const TEST_COLS: [string, string][] = [
-    ["Corrosion", "corrosionTestStatus"],
-    ["Spill", "spillBucketTestStatus"],
-    ["Overfill", "overfillProtectionDeviceTestStatus"],
-    ["LLD", "lldLineTightnessTestStatus"],
-    ["ATG", "atgProbesTestStatus"],
-    ["Sump", "sumpTestStatus"],
-    ["Stage 1", "stage1TestStatus"],
-  ];
+  const firstRow = rows[0];
+  const isComplianceFormat = "storeNumber" in firstRow && ("corrosionTestStatus" in firstRow || "city" in firstRow);
+  const isOverdueOrExpiryFormat = "itemType" in firstRow || "expiredDate" in firstRow;
 
-  const activeCols = TEST_COLS.filter(([, key]) =>
-    rows.some((r) => r[key] != null && r[key] !== "")
-  );
+  if (isOverdueOrExpiryFormat) {
+    return (
+      <div className="mt-3 overflow-hidden rounded-md border border-slate-200 bg-white shadow-subtle">
+        <div className="flex items-center gap-1.5 bg-[#F8FAFC] px-3.5 py-2 border-b border-slate-200 text-xs font-semibold text-slate-700">
+          <TableIcon className="size-3.5 text-amber-600" />
+          <span>{title} ({rows.length})</span>
+        </div>
+        <div className="overflow-x-auto max-h-64">
+          <table className="w-full text-left text-xs divide-y divide-slate-200 font-sans">
+            <thead className="bg-[#F8FAFC] sticky top-0 text-slate-700 font-semibold select-none">
+              <tr>
+                <th className="px-3 py-2 whitespace-nowrap">Store#</th>
+                <th className="px-3 py-2 whitespace-nowrap">Item</th>
+                <th className="px-3 py-2 whitespace-nowrap">City</th>
+                <th className="px-3 py-2 whitespace-nowrap">Street</th>
+                <th className="px-3 py-2 whitespace-nowrap">Expiry Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {rows.map((row, i) => {
+                const dateStr = row.expiredDate ? String(row.expiredDate).split("T")[0] : "-";
+                return (
+                  <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-3 py-2 font-mono font-semibold text-slate-900 whitespace-nowrap tabular-nums">
+                      #{String(row.storeNumber ?? "")}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                        {String(row.itemType ?? "Renewal")}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-slate-700 whitespace-nowrap">{String(row.city ?? "")}</td>
+                    <td className="px-3 py-2 text-slate-500 truncate max-w-[140px]">{String(row.streetName ?? "")}</td>
+                    <td className="px-3 py-2 font-mono text-slate-700 whitespace-nowrap">{dateStr}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  if (isComplianceFormat) {
+    const TEST_COLS: [string, string][] = [
+      ["Corrosion", "corrosionTestStatus"],
+      ["Spill", "spillBucketTestStatus"],
+      ["Overfill", "overfillProtectionDeviceTestStatus"],
+      ["LLD", "lldLineTightnessTestStatus"],
+      ["ATG", "atgProbesTestStatus"],
+      ["Sump", "sumpTestStatus"],
+      ["Stage 1", "stage1TestStatus"],
+    ];
+
+    const activeCols = TEST_COLS.filter(([, key]) =>
+      rows.some((r) => r[key] != null && r[key] !== "")
+    );
+
+    return (
+      <div className="mt-3 overflow-hidden rounded-md border border-slate-200 bg-white shadow-subtle">
+        <div className="flex items-center gap-1.5 bg-[#F8FAFC] px-3.5 py-2 border-b border-slate-200 text-xs font-semibold text-slate-700">
+          <TableIcon className="size-3.5 text-[#15803D]" />
+          <span>{title} ({rows.length})</span>
+        </div>
+        <div className="overflow-x-auto max-h-64">
+          <table className="w-full text-left text-xs divide-y divide-slate-200 font-sans">
+            <thead className="bg-[#F8FAFC] sticky top-0 text-slate-700 font-semibold select-none">
+              <tr>
+                <th className="px-3 py-2 whitespace-nowrap">Store#</th>
+                <th className="px-3 py-2 whitespace-nowrap">City</th>
+                <th className="px-3 py-2 whitespace-nowrap">Street</th>
+                {activeCols.map(([label]) => (
+                  <th key={label} className="px-3 py-2 whitespace-nowrap text-center">{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {rows.map((row, i) => (
+                <tr key={i} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-3 py-2 font-mono font-semibold text-slate-900 whitespace-nowrap tabular-nums">
+                    #{String(row.storeNumber ?? "")}
+                  </td>
+                  <td className="px-3 py-2 text-slate-700 whitespace-nowrap">{String(row.city ?? "")}</td>
+                  <td className="px-3 py-2 text-slate-500 truncate max-w-[140px]">
+                    {String(row.streetName ?? "")}
+                  </td>
+                  {activeCols.map(([label, key]) => (
+                    <td key={label} className="px-3 py-2 text-center">
+                      <StatusBadge status={row[key] as string} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // Generic column fallback for any other tabular dataset
+  const columns = Object.keys(firstRow).filter((k) => typeof firstRow[k] !== "object" || firstRow[k] === null);
 
   return (
     <div className="mt-3 overflow-hidden rounded-md border border-slate-200 bg-white shadow-subtle">
       <div className="flex items-center gap-1.5 bg-[#F8FAFC] px-3.5 py-2 border-b border-slate-200 text-xs font-semibold text-slate-700">
         <TableIcon className="size-3.5 text-[#15803D]" />
-        <span>Matching Records ({rows.length})</span>
+        <span>{title} ({rows.length})</span>
       </div>
       <div className="overflow-x-auto max-h-64">
         <table className="w-full text-left text-xs divide-y divide-slate-200 font-sans">
           <thead className="bg-[#F8FAFC] sticky top-0 text-slate-700 font-semibold select-none">
             <tr>
-              <th className="px-3 py-2 whitespace-nowrap">Store#</th>
-              <th className="px-3 py-2 whitespace-nowrap">City</th>
-              <th className="px-3 py-2 whitespace-nowrap">Street</th>
-              {activeCols.map(([label]) => (
-                <th key={label} className="px-3 py-2 whitespace-nowrap text-center">{label}</th>
+              {columns.map((col) => (
+                <th key={col} className="px-3 py-2 whitespace-nowrap capitalize">
+                  {col.replace(/([A-Z])/g, " $1")}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white">
             {rows.map((row, i) => (
               <tr key={i} className="hover:bg-slate-50/80 transition-colors">
-                <td className="px-3 py-2 font-mono font-semibold text-slate-900 whitespace-nowrap tabular-nums">
-                  #{String(row.storeNumber ?? "")}
-                </td>
-                <td className="px-3 py-2 text-slate-700 whitespace-nowrap">{String(row.city ?? "")}</td>
-                <td className="px-3 py-2 text-slate-500 truncate max-w-[140px]">
-                  {String(row.streetName ?? "")}
-                </td>
-                {activeCols.map(([label, key]) => (
-                  <td key={label} className="px-3 py-2 text-center">
-                    <StatusBadge status={row[key] as string} />
+                {columns.map((col) => (
+                  <td key={col} className="px-3 py-2 text-slate-700 whitespace-nowrap">
+                    {row[col] != null ? String(row[col]) : "-"}
                   </td>
                 ))}
               </tr>
@@ -196,7 +280,7 @@ export default function Chat() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
-      {/* Page Header (Section 32) */}
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-5">
         <div>
           <span className="section-tag">NATURAL LANGUAGE INTELLIGENCE</span>
@@ -218,7 +302,7 @@ export default function Chat() {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-        {/* Chat Window Card (Section 29) */}
+        {/* Chat Window Card */}
         <Card className="flex flex-col h-[650px] card-shadow overflow-hidden">
           {/* Chat Header */}
           <CardHeader className="py-3 px-5 bg-slate-50/70 border-b border-slate-200">
@@ -260,7 +344,7 @@ export default function Chat() {
                       : "bg-white text-slate-900 rounded-tl-xs border border-slate-200"
                   }`}
                 >
-                  {/* Intent Badge for Transparency */}
+                  {/* Intent Badge */}
                   {m.intent && m.role === "bot" && m.intent !== "gemini" && (
                     <div className="mb-1.5">
                       <span className="inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium uppercase tracking-wider rounded bg-slate-100 text-slate-600 border border-slate-200">
@@ -294,12 +378,25 @@ export default function Chat() {
                     </div>
                   )}
 
-                  {/* Inline Record Table */}
-                  {m.rows && m.rows.length > 0 && m.intent === "list_records" && (
-                    <InlineRecordTable rows={m.rows} />
-                  )}
+                  {/* Inline Record Table: renders whenever rows are available for listing intents */}
+                  {m.rows &&
+                    m.rows.length > 0 &&
+                    (m.intent === "list_records" ||
+                      ("itemType" in m.rows[0]) ||
+                      ("storeNumber" in m.rows[0] && "streetName" in m.rows[0])) && (
+                      <InlineGenericTable
+                        rows={m.rows}
+                        title={
+                          m.intent === "overdue"
+                            ? "Overdue Renewals"
+                            : m.intent === "expiring_soon"
+                            ? "Expiring Certificates"
+                            : "Matching Compliance Records"
+                        }
+                      />
+                    )}
 
-                  {/* Attached SQL Snippet (collapsible/visible) */}
+                  {/* Attached SQL Snippet */}
                   {m.sql && (
                     <details className="mt-2.5 pt-2 border-t border-slate-200 text-[11px] text-slate-500">
                       <summary className="cursor-pointer hover:text-[#15803D] font-mono font-medium flex items-center gap-1 select-none">
@@ -335,13 +432,13 @@ export default function Chat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input Form Bar (Section 20 & 21) */}
+          {/* Input Form Bar */}
           <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-slate-200 flex gap-2 items-center">
             <div className="flex-1">
               <Input
                 placeholder={
                   mode === "nlu"
-                    ? "Ask a question (e.g. 'How many failures in spill bucket test?', 'Pie chart of corrosion', 'Records in Dallas')..."
+                    ? "Ask a question (e.g. 'List the overdue items', 'How many failures in spill bucket test?', 'Pie chart of corrosion')..."
                     : "Ask Gemini about compliance rules or records..."
                 }
                 value={input}

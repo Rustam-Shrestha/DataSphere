@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   UserCircle2,
+  CodeIcon,
 } from "@assets/icons";
 
 const navLinks = [
@@ -16,6 +17,7 @@ const navLinks = [
   { to: "/data", label: "Records", icon: <TableIcon className="size-4 shrink-0" /> },
   { to: "/chat", label: "Chat Assistant", icon: <MessageSquareText className="size-4 shrink-0" /> },
   { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="size-4 shrink-0" /> },
+  { to: "/sql", label: "SQL Studio", icon: <CodeIcon className="size-4 shrink-0" /> },
 ];
 
 export function Navbar() {
@@ -42,7 +44,7 @@ export function Navbar() {
           </div>
         </NavLink>
 
-        {/* Navigation items (Section 31: active nav bg: #DCFCE7, color: #166534, font-weight: 500) */}
+        {/* Navigation items */}
         <nav className="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-md border border-slate-200/60">
           {navLinks.map((link) => (
             <NavLink
@@ -80,34 +82,8 @@ export function Navbar() {
                 Logout
               </Button>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-xs text-slate-500 font-mono bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
-              <span className="inline-block w-2 h-2 rounded-full bg-[#D97706]" />
-              <span>Guest Mode</span>
-            </div>
-          )}
+          ) : null}
         </div>
-      </div>
-
-      {/* Mobile nav */}
-      <div className="md:hidden flex items-center justify-around border-t border-slate-200 bg-slate-50/95 py-2 px-2">
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.to === "/"}
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-3 py-1 rounded-md text-xs transition ${
-                isActive
-                  ? "text-[#166534] bg-[#DCFCE7] font-medium"
-                  : "text-slate-600 hover:text-slate-900"
-              }`
-            }
-          >
-            {link.icon}
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
       </div>
     </header>
   );

@@ -5,6 +5,7 @@ import Upload from "./pages/Upload";
 import Data from "./pages/Data";
 import Chat from "./pages/Chat";
 import Dashboard from "./pages/Dashboard";
+import SqlStudio from "./pages/SqlStudio";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/data" element={<Data />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/sql" element={<SqlStudio />} />
           </Route>
         </Routes>
       </BrowserRouter>

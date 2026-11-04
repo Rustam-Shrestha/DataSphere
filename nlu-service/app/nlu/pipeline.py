@@ -250,6 +250,7 @@ def _handle(question: str) -> QueryResponse:
     store_number = intents.extract_store_number(question)
     n_days = entities.extract_n_days(question, default=30)
 
+    is_list_request = bool(re.search(r"\b(list|show|fetch|give me|tell me|get|display|pull up)\b", q_norm))
     has_trend = bool(re.search(r"\b(trend|over time|timeline|monthly|weekly|daily)\b", q_norm))
     has_histo = bool(re.search(r"\b(histogram|histo|frequency|distribution of fail)\b", q_norm))
     has_compare = bool(re.search(r"\b(compare|comparison|versus|vs\.?|vs )\b", q_norm))
@@ -280,7 +281,7 @@ def _handle(question: str) -> QueryResponse:
             intent="unrecognized",
             answer=(
                 "I couldn't quite understand that. Try asking about test failure rates, "
-                "pass/fail counts, charts, record lookups, or certificate expirations."
+                "pass/fail counts, listing overdue items, charts, or store lookups."
             ),
             sql="",
             rows=[],
@@ -302,10 +303,12 @@ def _handle(question: str) -> QueryResponse:
         sql, params = templates.summary_sql(city, store_number)
 
     elif intent == "EXPIRING_SOON":
-        sql, params = templates.expiring_soon_sql(n_days)
+        # If user explicitly said "list the expiring items / show expiring records"
+        sql, params = templates.expiring_soon_sql(n_days, detailed=is_list_request)
 
     elif intent == "OVERDUE":
-        sql, params = templates.overdue_sql()
+        # If user explicitly asked to list overdue items
+        sql, params = templates.overdue_sql(detailed=is_list_request)
 
     elif intent == "LIST_RECORDS":
         sql, params = templates.list_records_sql(city, store_number)
@@ -335,9 +338,14 @@ def _handle(question: str) -> QueryResponse:
             cur.execute(sql, params)
             rows = [dict(r) for r in cur.fetchall()]
 
+    # Format date objects to string for JSON serialization
+    for r in rows:
+        for k, v in list(r.items()):
+            if hasattr(v, "isoformat"):
+                r[k] = v.isoformat()
+
     # Response Format Decision Layer:
-    # Scalar/list queries (STATUS_COUNTS, FAILURE_RATE, EXPIRING_SOON, OVERDUE, LIST_RECORDS)
-    # produce NO chart unless the user specifically and explicitly requested a visual/chart.
+    # Scalar/list queries produce NO chart unless user explicitly requested a chart.
     should_build_chart = (
         intent == "CHART_DATA"
         or (intent == "SUMMARY" and user_wants_visual)
@@ -364,6 +372,7 @@ def _handle(question: str) -> QueryResponse:
         status_filter=status_filter,
         chart_type=chart_type,
         has_chart=(chart is not None),
+        is_listing=is_list_request,
     )
 
     return QueryResponse(

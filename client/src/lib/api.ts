@@ -60,5 +60,13 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ question, mode }),
       }),
+    executeSql: (query: string) =>
+      request<{ rows: Record<string, unknown>[]; rowCount: number; executionTimeMs: number }>(
+        "/chatbot/sql/execute",
+        {
+          method: "POST",
+          body: JSON.stringify({ query }),
+        }
+      ),
   },
 };
